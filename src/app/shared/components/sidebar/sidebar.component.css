@@ -1,0 +1,30 @@
+ul {
+    padding: 0;
+    li {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 1s;
+        width: 100%;
+    }
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+li.active {
+    color: rgb(110, 231, 183);
+}
+
+li.last {
+    order: 999999;
+}
+
+:host::ng-deep .p-autocomplete-dropdown {
+    border-radius: 0 5px 5px 0;
+}

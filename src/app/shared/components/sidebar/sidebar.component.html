@@ -1,0 +1,241 @@
+<p-toast/>
+
+<div class="card flex justify-center">
+    <p-sidebar [(visible)]="sidebarVisible" closeOnEscape="true" dismissible="false" modal="false" styleClass="w-auto">
+        <ng-template pTemplate="header">
+            <div class="flex flex-col gap-2">
+                <section class="flex items-center w-full px-2 gap-3">
+                    <span class="font-semibold sm:text-xl">
+                        Listas inteligentes
+                    </span>
+                    <p-button class="flex items-center" styleClass="bg-blue-600 border-blue-600 text-white hover:bg-blue-500" (onClick)="formAddLista.reset(); messages = []; visiblePopupAddList = true">
+                        <i class="pi pi-plus"></i>
+                        <span class="hidden-movil">Nueva lista</span>
+                    </p-button>
+                </section>
+                <section class="flex gap-2 justify-center">
+                    <p-button class="flex items-center" styleClass="bg-blue-600 border-blue-600 text-white hover:bg-blue-500" (onClick)="this.formAddListaCompartida.reset(); visiblePopupAnadirCompartida = true">
+                        <i class="pi pi-plus"></i>
+                        <span class="hidden-movil">Añadir lista compartida</span>
+                    </p-button>
+                </section>
+            </div>
+        </ng-template>
+        <input placeholder="Buscar por nombre" pInputText class="flex-auto w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
+        <ul>
+            @for (lista of listasFiltradasListado; track lista.id) {
+                <li>
+                    <div class="flex items-center gap-2 w-full">
+                        <span (click)="idListaSeleccionada.set(lista.id); sidebarVisible = false" class="bg-blue-700 hover:bg-green-500 rounded p-2 w-full flex items-center gap-2 justify-center" [ngClass]="{'bg-green-600': idListaSeleccionada() === lista.id}">
+                            @if (lista.compartida) {
+                                <i class="pi pi-share-alt"></i>
+                            }
+                            <span>{{ lista.nombre }}</span>
+                        </span>
+                        <i class="pi pi-ellipsis-v" (click)="overlayOptions.toggle($event)"></i>
+                        <p-overlayPanel #overlayOptions>
+                            <section class="flex flex-col gap-3">
+                                <div (click)="overlayOptions.hide(); predeterminarListaEmit(lista.id)" class="hover:text-blue-500 cursor-pointer">
+                                    <i class="pi pi-bookmark text-blue-400 mr-2"></i>
+                                    <span>Predeterminar lista</span>
+                                </div>
+                                <div class="hover:text-orange-500 cursor-pointer" (click)="overlayOptions.hide(); abrirEditarLista(lista); visiblePopupEditarList = true;">
+                                    <i class="pi pi-pencil text-orange-400 mr-2"></i>
+                                    <span>Editar nombre y descripcion</span>
+                                </div>
+                                <div class="hover:text-green-500 cursor-pointer" (click)="overlayOptions.hide(); abrirEditarLista(lista); visiblePopupCompartirList = true;">
+                                    <i [class]="lista?.compartida ? 'pi pi-share-alt text-green-400 mr-2' : 'pi pi-cog text-green-400 mr-2'"></i>
+                                    <span>{{ !lista?.compartida ? 'Compartir' : 'Gestionar compartir' }} lista</span>
+                                </div>
+                                <div (click)="overlayOptions.hide(); eliminarListaEmit(lista, $event)" class="hover:text-red-500 cursor-pointer">
+                                    <i class="pi pi-trash text-red-400 mr-2"></i>
+                                    <span>Eliminar lista</span>
+                                </div>
+                            </section>
+                        </p-overlayPanel>
+                    </div>
+                </li>
+            }
+        </ul>
+    </p-sidebar>
+    <p-button (onClick)="sidebarVisible = true" icon="pi pi-bars" />
+</div>
+
+<!-- Anadir -->
+<p-dialog 
+    [(visible)]="visiblePopupAddList" 
+    [modal]="true" 
+    [dismissableMask]="false"
+    styleClass="p-3 w-[500px]"
+>
+    <ng-template pTemplate="header">
+        <h2>Añadir lista</h2>
+    </ng-template>
+    
+    <form [formGroup]="formAddLista" (ngSubmit)="addLista()" (keydown.control.enter)="addLista()" class="flex flex-col items-center gap-3 w-full">
+        <input placeholder="Nombre de la lista" pInputText id="nombre" #nombre class="flex-auto w-full text-lg" autocomplete="off" formControlName="nombre"/>
+        
+        <textarea placeholder="Descripción" pInputText id="descripcion" class="flex-auto w-full text-lg p-3" autocomplete="off" formControlName="descripcion"></textarea>
+
+        <section class="flex flex-col gap-2 w-full">
+            <span>Añadir elementos de otras listas</span>
+            <p-autoComplete 
+            formControlName="listasOtrosElementos"
+            placeholder="Listas"
+            [suggestions]="listasFiltradasElementos" 
+            (completeMethod)="filtrarNombresListasElementos($event)" 
+            completeOnFocus
+            dropdown
+            styleClass="w-full"
+            emptyMessage="No hay listas que contengan ese nombre"
+            optionLabel="nombre"
+            [forceSelection]="true"
+            [multiple]="true"
+            appendTo="body"
+            />
+        </section>
+        
+        <section class="flex items-center gap-2 w-full justify-end">
+            <p-checkbox formControlName="compartida" inputId="compartida" binary="true" value="false"/>
+            <label for="compartida">Compartida</label>
+            <i class="pi pi-info-circle" pTooltip="Compartir con cualquier usuario que tenga el código de nuestra lista (no su nombre)"></i>
+        </section>
+        
+        <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2 p-2">
+            <p-button 
+                label="Cancelar" 
+                [text]="true" 
+                styleClass="cancel"
+                (onClick)="visiblePopupAddList = false" 
+            />
+            <p-button 
+                label="Añadir" 
+                [outlined]="true" 
+                (onClick)="addLista()" 
+            />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Editar -->
+<p-dialog 
+[(visible)]="visiblePopupEditarList" 
+[modal]="true" 
+[dismissableMask]="false"
+styleClass="p-3 w-[500px]"
+>
+    <ng-template pTemplate="header">
+        <h2>Editar lista</h2>
+    </ng-template>
+
+    <form [formGroup]="formEditLista" (ngSubmit)="editLista()" (keydown.control.enter)="editLista()" class="flex flex-col items-center gap-3 w-full">
+        <input placeholder="Nombre de la lista" pInputText id="nombre" #nombre class="flex-auto w-full text-lg" autocomplete="off" formControlName="nombre"/>
+        <textarea placeholder="Descripción" pInputText id="descripcion" class="flex-auto w-full text-lg p-3" autocomplete="off" formControlName="descripcion"></textarea>
+        <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2 p-2">
+            <p-button 
+                label="Cancelar" 
+                [text]="true" 
+                styleClass="cancel"
+                (onClick)="visiblePopupEditarList = false" 
+            />
+            <p-button 
+                label="Aplicar" 
+                [outlined]="true" 
+                (onClick)="editLista()" 
+            />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Compartir -->
+<p-dialog 
+[(visible)]="visiblePopupCompartirList" 
+[modal]="true" 
+[dismissableMask]="false"
+styleClass="p-3 w-[500px]"
+>
+    <ng-template pTemplate="header">
+        <h2 class="mr-1">{{ !formEditLista.get('compartida')?.value ? 'Compartir' : '' }} <span class="text-green-500">{{ formEditLista.get('nombre')?.value }}</span> {{ formEditLista.get('compartida')?.value ? 'compartida' : '' }}</h2>
+    </ng-template>
+
+    <form [formGroup]="formEditLista" (ngSubmit)="editLista()" (keydown.control.enter)="editLista()" class="flex flex-col items-center gap-3 w-full">
+        <section class="flex flex-col gap-2 w-full">
+            <article class="flex gap-2 items-center">
+                <span>Código a compartir:</span>
+                <i class="pi pi-info-circle" pTooltip="Compartir con cualquier usuario que tenga el código de nuestra lista (no su nombre)"></i>
+            </article>
+            <article class="flex flex-nowrap w-full">
+                <span class="grow border border-solid border-1 border-white rounded bg-black text-white p-2 rounded-r-none">{{ formEditLista.get('id')?.value }}</span>
+                <i class="pi pi-copy border border-solid border-1 border-white rounded rounded-l-none bg-black text-white p-2 cursor-pointer" pTooltip="Copiar código" (click)="copiarCodigoCompartir()"></i>
+            </article>
+        </section>
+        <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2 p-2">
+            <p-button 
+                label="Cancelar" 
+                [text]="true" 
+                styleClass="cancel"
+                (onClick)="visiblePopupCompartirList = false" 
+            />
+            <p-button 
+                [label]="!formEditLista.get('compartida')?.value ? 'Compartir' : 'Dejar de compartir'" 
+                [styleClass]="!formEditLista.get('compartida')?.value ? '' : 'text-red-500 border-red-500'"
+                [outlined]="true" 
+                (onClick)="formEditLista.get('compartida')?.setValue(!formEditLista.get('compartida')?.value); editLista(!formEditLista.get('compartida')?.value)" 
+            />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Anadir lista compartida -->
+<p-dialog 
+[(visible)]="visiblePopupAnadirCompartida" 
+[modal]="true" 
+[dismissableMask]="false"
+styleClass="p-3 w-[500px]"
+>
+    <ng-template pTemplate="header">
+        <h2 class="mr-1">Introduce el código de la lista a la que quieres unirte</h2>
+    </ng-template>
+
+    <form [formGroup]="formAddListaCompartida" (ngSubmit)="anadirListaCompartida()" (keydown.control.enter)="anadirListaCompartida()" class="flex flex-col items-center gap-3 w-full">
+        <section class="flex flex-col gap-2 w-full">
+            <article class="flex gap-2 items-center">
+                <span>Código de la lista:</span>
+                <i class="pi pi-info-circle" pTooltip="Un usuario que tenga la lista compartida te debe dar su código"></i>
+            </article>
+            <article class="flex flex-nowrap w-full">
+                <input class="grow border border-solid border-1 border-white rounded bg-black text-white p-2 rounded-r-none" placeholder="Pegar código aquí" formControlName="id"/>
+                <i class="pi pi-clipboard border border-solid border-1 border-white rounded rounded-l-none bg-black text-white p-2 cursor-pointer" pTooltip="Pegar del portapapeles" (click)="pegarDelPortapapeles()"></i>
+            </article>
+        </section>
+        <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2 p-2">
+            <p-button 
+                label="Cancelar" 
+                [text]="true" 
+                styleClass="cancel"
+                (onClick)="visiblePopupAnadirCompartida = false" 
+            />
+            <p-button 
+                label="Añadir" 
+                [outlined]="true" 
+                (onClick)="anadirListaCompartida()" 
+            />
+        </div>
+    </ng-template>
+</p-dialog>
