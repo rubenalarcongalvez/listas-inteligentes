@@ -74,7 +74,7 @@ export class SidebarComponent {
       });
 
       // Anadimos la lista
-      this.setLista.emit({uidsPermitidos: [], nombre: this.formAddLista?.get('nombre')?.value, compartida: this.formAddLista?.get('compartida')?.value || false, descripcion: this.formAddLista?.get('descricion')?.value || '', elementos: elementos} as Lista);
+      this.setLista.emit({uidsPermitidos: [], nombre: this.formAddLista?.get('nombre')?.value, compartida: this.formAddLista?.get('compartida')?.value || false, descripcion: this.formAddLista?.get('descripcion')?.value || '', elementos: elementos} as Lista);
       this.formAddLista.reset();
       this.visiblePopupAddList = false;
     }
