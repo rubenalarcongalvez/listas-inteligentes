@@ -434,7 +434,7 @@ export class AppComponent {
 
   private guardarCambiosElemento(confirmacion: boolean = true, mensaje?) {
     // Guardamos los cambios
-    this.storageService.setLista(this.listaSeleccionada(), this.listaSeleccionada().id).subscribe({
+    this.storageService.setLista(this.listaSeleccionada(), this.idListaSeleccionada()).subscribe({
       next: () => {
         if (confirmacion) {
           this.messageService.add({
