@@ -104,7 +104,7 @@
                                                 <span class="grow" [ngClass]="{'line-through': elemento?.checkeado}">{{elemento.nombre}}</span>
                                             </span>
                                             @if (elemento?.descripcion) {
-                                                <span>{{ elemento.descripcion }}</span>
+                                                <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
                                             }
                                         </summary>
                                         <ul class="flex flex-col gap-2 py-2">
@@ -127,7 +127,7 @@
                                             <span class="grow" [ngClass]="{'line-through': elemento?.checkeado}">{{elemento.nombre}}</span>
                                         </span>
                                         @if (elemento?.descripcion) {
-                                            <span>{{ elemento.descripcion }}</span>
+                                            <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
                                         }
                                     </div>
                                 }
@@ -153,7 +153,7 @@
     [modal]="true" 
     [dismissableMask]="true"
     [style]="{ width: '25rem', minWidth: '25rem', minHeight: '215px' }"
-    styleClass="p-3 bg-white"
+    styleClass="p-3"
 >
     <ng-template pTemplate="header">
         <h2 class="text-blue-600">Actualizar email</h2>
@@ -191,7 +191,7 @@ header="Header"
 [modal]="true" 
 [dismissableMask]="true"
 [style]="{ width: '25rem', minWidth: '25rem', minHeight: '215px' }"
-styleClass="p-3 bg-white"
+styleClass="p-3"
 >
     <ng-template pTemplate="header">
         <h2 class="text-blue-600">Actualizar contraseña</h2>
@@ -227,7 +227,7 @@ styleClass="p-3 bg-white"
     [(visible)]="visibleDeleteUserPopup" 
     [modal]="true" 
     [dismissableMask]="true"
-    styleClass="p-3 bg-white"
+    styleClass="p-3"
 >
     <ng-template pTemplate="header">
         <h2 class="text-red-600">ATENCIÓN</h2>

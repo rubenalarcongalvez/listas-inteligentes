@@ -324,6 +324,9 @@ export class AppComponent {
         rejectLabel: 'Cancelar',
         acceptLabel: 'Confirmar',
         accept: () => {
+          // Si tenia descripcion, se deja, excepto si tiene una nueva
+          elementoAModificar.descripcion = (elementoAModificar.descripcion && !this.formAddEditElemento.get('descripcion')?.value) ? elementoAModificar.descripcion : this.formAddEditElemento.get('descripcion')?.value;
+
           // Si el elemento tenia otras variantes aparte, se anaden
           if (elementoAModificar?.variedades?.length) {
             let variedadesAnadir = this.formAddEditElemento?.get('variedades')?.value || [];
@@ -360,13 +363,23 @@ export class AppComponent {
         rejectLabel: 'Cancelar',
         acceptLabel: 'Confirmar',
         accept: () => {
-          // Lo sustituimos por lo nuevo
+          // Lo sustituimos por lo nuevo (si lo nuevo no tiene nada y lo antiguo si, se queda lo antiguo)
           elementoAModificar.nombre = this.formAddEditElemento.get('nombre')?.value;
-          elementoAModificar.descripcion = this.formAddEditElemento.get('descripcion')?.value || '';
+          elementoAModificar.descripcion = (elementoAModificar.descripcion && !this.formAddEditElemento.get('descripcion')?.value) ? elementoAModificar.descripcion : this.formAddEditElemento.get('descripcion')?.value;
           elementoAModificar.checkeado = this.formAddEditElemento.get('checkeado')?.value || false;
           elementoAModificar.cantidad = this.formAddEditElemento.get('cantidad')?.value;
           elementoAModificar.unidadMedida = this.formAddEditElemento.get('unidadMedida')?.value;
-          elementoAModificar.variedades = this.formAddEditElemento.get('variedades')?.value || [];
+
+          // Si el elemento tenia otras variantes aparte, se anaden
+          if (elementoAModificar?.variedades?.length) {
+            let variedadesAnadir = this.formAddEditElemento?.get('variedades')?.value || [];
+            if (variedadesAnadir?.length) {
+              variedadesAnadir = this.formAddEditElemento?.get('variedades')?.value?.filter(variedad => !elementoAModificar?.variedades?.includes(variedad?.toLowerCase()));
+              elementoAModificar.variedades.push(...variedadesAnadir);
+            }
+          } else {
+            elementoAModificar.variedades = this.formAddEditElemento.get('variedades')?.value || [];
+          }
 
           // Si hay que eliminar el anterior, se elimina
           if (elementoAEliminar) {

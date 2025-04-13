@@ -1,22 +1,23 @@
 <p-toast/>
 
 <div class="card flex justify-center">
-    <p-sidebar [(visible)]="sidebarVisible" closeOnEscape="true" dismissible="false" modal="false" styleClass="w-auto">
+    <p-sidebar [(visible)]="sidebarVisible" closeOnEscape="true" dismissible="false" modal="false" styleClass="w-auto" [fullScreen]="true">
         <ng-template pTemplate="header">
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2 w-full">
                 <section class="flex items-center w-full px-2 gap-3">
                     <span class="font-semibold sm:text-xl">
                         Listas inteligentes
                     </span>
+                </section>
+                <section class="flex gap-2 justify-between w-full px-2">
+                    <p-button class="flex items-center" styleClass="bg-blue-600 border-blue-600 text-white hover:bg-blue-500" (onClick)="this.formAddListaCompartida.reset(); visiblePopupAnadirCompartida = true" pTooltip="Añadir lista compartida">
+                        <i class="pi pi-plus"></i>
+                        <i class="pi pi-share-alt"></i>
+                        <span class="hidden-movil">Unirse a lista compartida</span>
+                    </p-button>
                     <p-button class="flex items-center" styleClass="bg-blue-600 border-blue-600 text-white hover:bg-blue-500" (onClick)="formAddLista.reset(); messages = []; visiblePopupAddList = true">
                         <i class="pi pi-plus"></i>
                         <span class="hidden-movil">Nueva lista</span>
-                    </p-button>
-                </section>
-                <section class="flex gap-2 justify-center">
-                    <p-button class="flex items-center" styleClass="bg-blue-600 border-blue-600 text-white hover:bg-blue-500" (onClick)="this.formAddListaCompartida.reset(); visiblePopupAnadirCompartida = true">
-                        <i class="pi pi-plus"></i>
-                        <span>Añadir lista compartida</span>
                     </p-button>
                 </section>
             </div>
