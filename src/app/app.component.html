@@ -65,10 +65,10 @@
                 </p-overlayPanel>
             </section>
             <section class="flex items-center gap-2 flex-wrap">
-                <h1 class="text-green-500 text-center grow break-all">{{ listaSeleccionada().nombre }}</h1>
+                <h1 class="text-green-500 text-center grow break-all mb-0">{{ listaSeleccionada().nombre }}</h1>
             </section>
             @if (listaSeleccionada().descripcion) {
-                <textarea class="w-full bg-transparent border-none p-0" disabled>{{ listaSeleccionada()?.descripcion }}</textarea>
+                <textarea class="w-full bg-transparent border-none p-0 text-center" disabled>{{ listaSeleccionada()?.descripcion }}</textarea>
             }
             <input placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
             <ul class="list-none flex flex-col gap-3 w-full p-0" cdkDropList (cdkDropListDropped)="drop($event)">
