@@ -1,4 +1,4 @@
-<p-toast/>
+<p-toast [breakpoints]="{ '920px': { width: '100%', right: '0', left: '0' } }"/>
 
 <div class="card flex justify-center">
     <p-sidebar [(visible)]="sidebarVisible" closeOnEscape="true" dismissible="false" modal="false" styleClass="w-auto" [fullScreen]="true">
@@ -9,20 +9,22 @@
                         Listas inteligentes
                     </span>
                 </section>
-                <section class="flex gap-2 justify-between w-full px-2">
-                    <p-button class="flex items-center" styleClass="bg-blue-600 border-blue-600 text-white hover:bg-blue-500" (onClick)="this.formAddListaCompartida.reset(); visiblePopupAnadirCompartida = true" pTooltip="Añadir lista compartida">
-                        <i class="pi pi-plus"></i>
-                        <i class="pi pi-share-alt"></i>
-                        <span class="hidden-movil">Unirse a lista compartida</span>
-                    </p-button>
-                    <p-button class="flex items-center" styleClass="bg-blue-600 border-blue-600 text-white hover:bg-blue-500" (onClick)="formAddLista.reset(); messages = []; visiblePopupAddList = true">
-                        <i class="pi pi-plus"></i>
-                        <span class="hidden-movil">Nueva lista</span>
-                    </p-button>
-                </section>
             </div>
         </ng-template>
-        <input placeholder="Buscar por nombre" pInputText class="flex-auto w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
+        <section class="flex gap-2 justify-between w-full pb-4">
+            <p-button class="flex items-center" styleClass="bg-blue-600 border-blue-600 text-white hover:bg-blue-500" (onClick)="this.formAddListaCompartida.reset(); visiblePopupAnadirCompartida = true">
+                <div pTooltip="Añadir lista compartida" class="flex gap-1 items-center">
+                    <i class="pi pi-plus"></i>
+                    <i class="pi pi-share-alt"></i>
+                </div>
+                <span class="hidden-movil">Unirse a lista</span>
+            </p-button>
+            <p-button class="flex items-center" styleClass="bg-blue-600 border-blue-600 text-white hover:bg-blue-500" (onClick)="formAddLista.reset(); messages = []; visiblePopupAddList = true">
+                <i class="pi pi-plus" pTooltip="Nueva lista"></i>
+                <span class="hidden-movil">Nueva lista</span>
+            </p-button>
+        </section>
+        <input placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
         <ul>
             @for (lista of listasFiltradasListado; track lista.id) {
                 <li>
@@ -67,6 +69,8 @@
     [(visible)]="visiblePopupAddList" 
     [modal]="true" 
     [dismissableMask]="false"
+    draggable="false"
+    maximizable
     styleClass="p-3 w-[500px]"
 >
     <ng-template pTemplate="header">
@@ -99,7 +103,7 @@
         <section class="flex items-center gap-2 w-full justify-end">
             <p-checkbox formControlName="compartida" inputId="compartida" binary="true" value="false"/>
             <label for="compartida">Compartida</label>
-            <i class="pi pi-info-circle" pTooltip="Compartir con cualquier usuario que tenga el código de nuestra lista (no su nombre)"></i>
+            <i class="pi pi-info-circle cursor-pointer" (click)="mostrarMensaje('Compartir con cualquier usuario que tenga el código de nuestra lista (no su nombre)')"></i>
         </section>
         
         <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
@@ -127,6 +131,8 @@
 [(visible)]="visiblePopupEditarList" 
 [modal]="true" 
 [dismissableMask]="false"
+draggable="false"
+maximizable
 styleClass="p-3 w-[500px]"
 >
     <ng-template pTemplate="header">
@@ -160,6 +166,8 @@ styleClass="p-3 w-[500px]"
 <p-dialog 
 [(visible)]="visiblePopupCompartirList" 
 [modal]="true" 
+draggable="false"
+maximizable
 [dismissableMask]="false"
 styleClass="p-3 w-[500px]"
 >
@@ -171,7 +179,7 @@ styleClass="p-3 w-[500px]"
         <section class="flex flex-col gap-2 w-full">
             <article class="flex gap-2 items-center">
                 <span>Código a compartir:</span>
-                <i class="pi pi-info-circle" pTooltip="Compartir con cualquier usuario que tenga el código de nuestra lista (no su nombre)"></i>
+                <i class="pi pi-info-circle cursor-pointer" (click)="mostrarMensaje('Compartir con cualquier usuario que tenga el código de nuestra lista (no su nombre)')"></i>
             </article>
             <article class="flex flex-nowrap w-full">
                 <span class="grow border border-solid border-1 border-white rounded bg-black text-white p-2 rounded-r-none">{{ formEditLista.get('id')?.value }}</span>
@@ -203,6 +211,8 @@ styleClass="p-3 w-[500px]"
 <p-dialog 
 [(visible)]="visiblePopupAnadirCompartida" 
 [modal]="true" 
+draggable="false"
+maximizable
 [dismissableMask]="false"
 styleClass="p-3 w-[500px]"
 >
@@ -214,7 +224,7 @@ styleClass="p-3 w-[500px]"
         <section class="flex flex-col gap-2 w-full">
             <article class="flex gap-2 items-center">
                 <span>Código de la lista:</span>
-                <i class="pi pi-info-circle" pTooltip="Un usuario que tenga la lista compartida te debe dar su código"></i>
+                <i class="pi pi-info-circle cursor-pointer" (click)="mostrarMensaje('Un usuario que tenga la lista compartida te debe dar su código')"></i>
             </article>
             <article class="flex flex-nowrap w-full">
                 <input class="grow border border-solid border-1 border-white rounded bg-black text-white p-2 rounded-r-none" placeholder="Pegar código aquí" formControlName="id"/>

@@ -90,7 +90,7 @@ button {
 }
 
 .hidden-movil {
-    @media(max-width: 500px) {
+    @media(max-width: 350px) {
         display: none;
     }
 }

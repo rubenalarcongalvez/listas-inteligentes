@@ -29,6 +29,8 @@
     [style]="{ width: '25rem', minWidth: '25rem', minHeight: '215px' }"
     [dismissableMask]="true"
     [resizable]="true"
+    draggable="false"
+    maximizable
     (onHide)="this.form.reset()"
 >
         <ng-template pTemplate="header">

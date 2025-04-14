@@ -1,6 +1,6 @@
 import { Component, computed, effect, EventEmitter, Input, Output, signal } from '@angular/core';
 import { PrimeNgModule } from '../../style/prime-ng/prime-ng.module';
-import { MessageService, ToastMessageOptions } from 'primeng/api';
+import { MessageService, ToastMessageOptions, ConfirmationService } from 'primeng/api';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ElementoLista, Lista } from '../../interfaces/lista';
 import { AutoCompleteCompleteEvent } from 'primeng/autocomplete';
@@ -39,7 +39,7 @@ export class SidebarComponent {
     return this.listas().filter(lista => !this.nombreFiltrar() || normalizarCadena(lista.nombre).includes(this.nombreFiltrar())).sort((a, b) => normalizarCadena(a.nombre).localeCompare(normalizarCadena(b.nombre)));
   }
 
-  constructor(private fb: FormBuilder, private messageService: MessageService){
+  constructor(private fb: FormBuilder, private messageService: MessageService, private confirmationService: ConfirmationService){
     this.formAddLista = this.fb.group({
       nombre: ['', Validators.required],
       descripcion: [''],
@@ -187,5 +187,14 @@ export class SidebarComponent {
   
   eliminarListaEmit(lista: Lista, event: Event) {
     this.eliminarLista.emit({lista, event});
+  }
+
+  mostrarMensaje(mensaje: string) {
+    this.confirmationService.confirm({
+      message: mensaje,
+      acceptButtonStyleClass: 'bg-white text-black p-button-sm',
+      rejectVisible: false,
+      acceptLabel: 'Entendido',
+    });
   }
 }

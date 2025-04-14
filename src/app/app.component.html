@@ -11,7 +11,7 @@
                 </ng-template>
             </p-confirmDialog>
         }
-        <p-toast/>
+        <p-toast [breakpoints]="{ '920px': { width: '100%', right: '0', left: '0' } }"/>
         <p-accordion class="grow" [activeIndex]="!loggedIn ? 0 : null">
             <p-accordionTab [header]="!loggedIn ? 'Iniciar sesión o registrarse usar la aplicación' : 'Opciones usuario'">
                 <div class="flex items-center gap-2 flex-wrap justify-center">
@@ -151,6 +151,8 @@
     header="Header" 
     [(visible)]="visibleUpdateEmailPopup" 
     [modal]="true" 
+    draggable="false"
+    maximizable
     [dismissableMask]="true"
     [style]="{ width: '25rem', minWidth: '25rem', minHeight: '215px' }"
     styleClass="p-3"
@@ -189,6 +191,8 @@
 header="Header" 
 [(visible)]="visibleUpdatePasswordPopup" 
 [modal]="true" 
+draggable="false"
+maximizable
 [dismissableMask]="true"
 [style]="{ width: '25rem', minWidth: '25rem', minHeight: '215px' }"
 styleClass="p-3"
@@ -226,6 +230,8 @@ styleClass="p-3"
     header="Header" 
     [(visible)]="visibleDeleteUserPopup" 
     [modal]="true" 
+    draggable="false"
+    maximizable
     [dismissableMask]="true"
     styleClass="p-3"
 >
@@ -257,6 +263,8 @@ styleClass="p-3"
 <p-dialog 
     [(visible)]="visiblePopupAddElemento" 
     [modal]="true" 
+    draggable="false"
+    maximizable
     [dismissableMask]="false"
     styleClass="p-3 w-[500px]"
 >
@@ -325,6 +333,8 @@ styleClass="p-3"
 <p-dialog 
     [(visible)]="visiblePopupEditElemento" 
     [modal]="true" 
+    draggable="false"
+    maximizable
     [dismissableMask]="false"
     styleClass="p-3 w-[500px]"
 >
@@ -393,6 +403,8 @@ styleClass="p-3"
 <p-dialog 
     [(visible)]="visiblePopupImportElementos" 
     [modal]="true" 
+    draggable="false"
+    maximizable
     [dismissableMask]="false"
     styleClass="p-3 w-[500px]"
 >
@@ -406,7 +418,7 @@ styleClass="p-3"
         <section class="flex items-center gap-2 w-full justify-end">
             <p-checkbox formControlName="quitarPrimeraLinea" inputId="quitarPrimeraLinea" [binary]="true"/>
             <label for="quitarPrimeraLinea">Quitar primera línea</label>
-            <i class="pi pi-info-circle" pTooltip="Quita la primera línea en caso de que importemos también el nombre de la lista lo primero"></i>
+            <i class="pi pi-info-circle cursor-pointer" (click)="mostrarMensaje('Quita la primera línea en caso de que importemos también el nombre de la lista lo primero')"></i>
         </section>
         
         <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>

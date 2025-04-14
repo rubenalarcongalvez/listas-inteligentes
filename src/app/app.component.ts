@@ -446,7 +446,6 @@ export class AppComponent {
   }
 
   private guardarCambiosElemento(confirmacion: boolean = true, mensaje?: string) {
-    console.log(this.listaSeleccionada());
     // Guardamos los cambios
     this.storageService.setLista(this.listaSeleccionada(), this.idListaSeleccionada()).subscribe({
       next: () => {
@@ -465,7 +464,6 @@ export class AppComponent {
         });
       }
     }).add(() => {
-      console.log(this.listaSeleccionada());
       this.visiblePopupAddElemento = false;
       this.visiblePopupEditElemento = false;
     });
@@ -734,5 +732,14 @@ export class AppComponent {
   drop(event: CdkDragDrop<string[]>) {
     moveItemInArray(this.listaSeleccionada().elementos, event.previousIndex, event.currentIndex);
     this.guardarLista(this.listaSeleccionada(), false, false);
+  }
+
+  mostrarMensaje(mensaje: string) {
+    this.confirmationService.confirm({
+      message: mensaje,
+      acceptButtonStyleClass: 'bg-white text-black p-button-sm',
+      rejectVisible: false,
+      acceptLabel: 'Entendido',
+    });
   }
 }
