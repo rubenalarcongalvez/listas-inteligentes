@@ -20,6 +20,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import {DragDropModule} from '@angular/cdk/drag-drop';
+import { BadgeModule } from 'primeng/badge';
 
 @NgModule({
   declarations: [],
@@ -45,7 +46,8 @@ import {DragDropModule} from '@angular/cdk/drag-drop';
     CheckboxModule,
     OverlayPanelModule,
     AutoCompleteModule,
-    DragDropModule
+    DragDropModule,
+    BadgeModule
   ]
 })
 export class PrimeNgModule { }

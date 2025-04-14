@@ -73,8 +73,8 @@
             <input placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
             <ul class="list-none flex flex-col gap-3 w-full p-0" cdkDropList (cdkDropListDropped)="drop($event)">
                 @for (listaElementos of elementosListaSeleccionada; track $index) {
-                    @if ($index == 1) {
-                     <hr class="w-full">
+                    @if (listaElementos?.length) {
+                        <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Elementos' : 'Elementos tachados' }}</h3>
                     }
 
                     @for (elemento of listaElementos || []; track elemento.nombre) {
@@ -285,9 +285,12 @@ styleClass="p-3"
         emptyMessage="Crea un nuevo elemento"
         optionValue="nombre"
         optionLabel="nombre"
-        showClear
         appendTo="body"
-        />
+        >
+            <ng-template let-elemento pTemplate="item">
+                <span class="text-wrap">{{ elemento.nombre }}</span>
+            </ng-template>
+        </p-autoComplete>
         <div class="flex gap-2 items-center">
             <input placeholder="Cantidad" min="0" pInputText id="cantidad" class="w-full" autocomplete="off" formControlName="cantidad" type="number"/>
             <input placeholder="Medida" pInputText id="unidadMedida" class="w-full" autocomplete="off" formControlName="unidadMedida"/>
@@ -355,9 +358,12 @@ styleClass="p-3"
         emptyMessage="Crea un nuevo elemento"
         optionValue="nombre"
         optionLabel="nombre"
-        showClear
         appendTo="body"
-        />
+        >
+            <ng-template let-elemento pTemplate="item">
+                <span class="text-wrap">{{ elemento.nombre }}</span>
+            </ng-template>
+        </p-autoComplete>
         <div class="flex gap-2 items-center">
             <input placeholder="Cantidad" min="0" pInputText id="cantidad" class="w-full" autocomplete="off" formControlName="cantidad" type="number"/>
             <input placeholder="Medida" pInputText id="unidadMedida" class="w-full" autocomplete="off" formControlName="unidadMedida"/>

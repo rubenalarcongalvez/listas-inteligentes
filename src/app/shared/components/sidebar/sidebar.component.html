@@ -34,6 +34,7 @@
                                 <i class="pi pi-share-alt"></i>
                             }
                             <span class="text-white">{{ lista.nombre }}</span>
+                            <p-badge [value]="lista?.elementos?.length || 0"/>
                         </span>
                         <i class="pi pi-ellipsis-v" (click)="overlayOptions.toggle($event)"></i>
                         <p-overlayPanel #overlayOptions>
@@ -97,7 +98,11 @@
             [forceSelection]="true"
             [multiple]="true"
             appendTo="body"
-            />
+            >
+                <ng-template let-elemento pTemplate="item">
+                    <span class="text-wrap">{{ elemento.nombre }}</span>
+                </ng-template>
+            </p-autoComplete>
         </section>
         
         <section class="flex items-center gap-2 w-full justify-end">
