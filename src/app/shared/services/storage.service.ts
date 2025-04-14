@@ -57,7 +57,7 @@ export class StorageService {
         return {
           id: doc.id,
           ...resto
-        } as any;
+        } as Lista;
       });
   
       // Ordenamos por nombre normalizado
@@ -69,7 +69,7 @@ export class StorageService {
     return from(promise);
   }
 
-  getListaCompartidaPorId(idLista: string): Observable<any> {
+  getListaCompartidaPorId(idLista: string): Observable<Lista> {
     const docRef = doc(this.firestore, `listas-inteligentes/listas-doc/listas/${idLista}`);
   
     return from(getDoc(docRef)).pipe(
@@ -86,13 +86,14 @@ export class StorageService {
         return {
           id: docSnap.id,
           ...data
-        };
+        } as Lista;
       })
     );
   }
 
   // El uid solo se pone si queremos dejar de compartir
-  setLista(lista: Lista, docId?: string, uidDejarCompartir?: string): Observable<void> {    
+  setLista(listaEnviada: Lista, docId?: string, uidDejarCompartir?: string): Observable<void> {    
+    let lista = structuredClone(listaEnviada); // Creamos copia para no interferir
     delete lista.id; // Eliminamos su id para que no se guarde en propiedad
 
     // Si tiene elementos, y tiene variedades, transformamos a string para que se guarde en Firebase

@@ -445,7 +445,8 @@ export class AppComponent {
     }
   }
 
-  private guardarCambiosElemento(confirmacion: boolean = true, mensaje?) {
+  private guardarCambiosElemento(confirmacion: boolean = true, mensaje?: string) {
+    console.log(this.listaSeleccionada());
     // Guardamos los cambios
     this.storageService.setLista(this.listaSeleccionada(), this.idListaSeleccionada()).subscribe({
       next: () => {
@@ -464,6 +465,7 @@ export class AppComponent {
         });
       }
     }).add(() => {
+      console.log(this.listaSeleccionada());
       this.visiblePopupAddElemento = false;
       this.visiblePopupEditElemento = false;
     });
