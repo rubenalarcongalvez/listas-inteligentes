@@ -34,7 +34,9 @@
                                 <i class="pi pi-share-alt"></i>
                             }
                             <span class="text-white">{{ lista.nombre }}</span>
-                            <p-badge [value]="lista?.elementos?.length || 0"/>
+                            @if (totalNoCheckeados(lista?.elementos)) {
+                                <p-badge [value]="totalNoCheckeados(lista?.elementos)"/>
+                            }
                         </span>
                         <i class="pi pi-ellipsis-v" (click)="overlayOptions.toggle($event)"></i>
                         <p-overlayPanel #overlayOptions>

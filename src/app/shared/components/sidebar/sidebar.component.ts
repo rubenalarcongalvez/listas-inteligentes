@@ -57,6 +57,10 @@ export class SidebarComponent {
       id: [, Validators.required],
     });
   }
+  
+  totalNoCheckeados(elementos: ElementoLista[]) {
+    return elementos?.filter(e => !e?.checkeado)?.length || 0;
+  }
 
   addLista() {
     this.messages = [];

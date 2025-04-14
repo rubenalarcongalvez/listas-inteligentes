@@ -74,7 +74,10 @@
             <ul class="list-none flex flex-col gap-3 w-full p-0" cdkDropList (cdkDropListDropped)="drop($event)">
                 @for (listaElementos of elementosListaSeleccionada; track $index) {
                     @if (listaElementos?.length) {
-                        <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Elementos' : 'Elementos tachados' }}</h3>
+                        <div class="flex gap-2 items-center">
+                            <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Pendiente' : 'Tachado' }}</h3>
+                            <p-badge [value]="listaElementos?.length || 0"/>
+                        </div>
                     }
 
                     @for (elemento of listaElementos || []; track elemento.nombre) {
