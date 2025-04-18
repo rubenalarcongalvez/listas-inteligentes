@@ -21,6 +21,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import {DragDropModule} from '@angular/cdk/drag-drop';
 import { BadgeModule } from 'primeng/badge';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @NgModule({
   declarations: [],
@@ -47,7 +48,8 @@ import { BadgeModule } from 'primeng/badge';
     OverlayPanelModule,
     AutoCompleteModule,
     DragDropModule,
-    BadgeModule
+    BadgeModule,
+    ProgressSpinnerModule
   ]
 })
 export class PrimeNgModule { }

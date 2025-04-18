@@ -1,7 +1,7 @@
 <div class="min-h-[100vh] flex flex-col justify-between items-center">
     <header class="p-5 w-100 my-0 max-w-[1920px] flex gap-1 items-center w-full">
         @if (loggedIn) {
-            <app-sidebar #sidebarRef [listas]="listas" [idListaSeleccionada]="idListaSeleccionada" (setLista)="guardarLista($event)" (predeterminarLista)="predeterminarLista($event)" (eliminarLista)="eliminarLista($event)" (anadirCompartida)="anadirCompartida($event)" (dejarDeCompartir)="guardarLista($event, true)"></app-sidebar>
+            <app-sidebar #sidebarRef [listas]="listas" [idListaSeleccionada]="idListaSeleccionada" (setLista)="guardarLista($event)" (predeterminarLista)="predeterminarLista($event)" (eliminarLista)="eliminarLista($event)" (anadirCompartida)="anadirCompartida($event)" (dejarDeCompartir)="guardarLista($event, true)" [cargando]="cargando"></app-sidebar>
             <p-confirmDialog>
                 <ng-template pTemplate="message" let-message>
                     <div class="flex flex-col items-center w-full gap-3 border-bottom-1 surface-border">
@@ -31,73 +31,99 @@
     </header>
 
     <main class="p-5 pt-0 my-0 max-w-[1920px] flex flex-col gap-2 grow w-full">
-        @if (loggedIn && listaSeleccionada()) {
-            <section class="flex items-center gap-2 justify-end">
-                <div class="flex items-center gap-2">
-                    <div class="flex gap-2 items-baseline bg-blue-600 p-2 rounded cursor-pointer text-white" (click)="formAddEditElemento.reset(); visiblePopupAddElemento = true">
-                        <i class="pi pi-plus"></i>
-                        <span>Añadir elemento</span>
+        @if (cargando) {
+            <p-progressSpinner ariaLabel="loading" class="w-full text-center pt-5"/>
+        } @else {
+            @if (loggedIn && listaSeleccionada()) {
+                <section class="flex items-center gap-2 justify-end">
+                    <div class="flex items-center gap-2">
+                        <div class="flex gap-2 items-baseline bg-blue-600 p-2 rounded cursor-pointer text-white" (click)="formAddEditElemento.reset(); visiblePopupAddElemento = true">
+                            <i class="pi pi-plus"></i>
+                            <span>Añadir elemento</span>
+                        </div>
+                        <div class="flex gap-2 items-baseline bg-blue-600 p-2 rounded cursor-pointer text-white" (click)="formImportElementoEstructurado.reset({ quitarPrimeraLinea: true }); visiblePopupImportElementos = true">
+                            <i class="pi pi-file-import" pTooltip="Importar elementos desde texto estructurado" tooltipPosition="left"></i>
+                        </div>
+                        <i class="pi pi-ellipsis-v cursor-pointer" (click)="overlayOptions.toggle($event)"></i>
                     </div>
-                    <div class="flex gap-2 items-baseline bg-blue-600 p-2 rounded cursor-pointer text-white" (click)="formImportElementoEstructurado.reset({ quitarPrimeraLinea: true }); visiblePopupImportElementos = true">
-                        <i class="pi pi-file-import" pTooltip="Importar elementos desde texto estructurado" tooltipPosition="left"></i>
-                    </div>
-                    <i class="pi pi-ellipsis-v cursor-pointer" (click)="overlayOptions.toggle($event)"></i>
-                </div>
-                <p-overlayPanel #overlayOptions>
-                    <section class="flex flex-col gap-3">
-                        <div (click)="overlayOptions.hide(); sidebarComponent.predeterminarListaEmit(listaSeleccionada().id)" class="hover:text-blue-500 cursor-pointer">
-                            <i class="pi pi-bookmark text-blue-400 mr-2"></i>
-                            <span>Predeterminar lista</span>
-                        </div>
-                        <div class="hover:text-orange-500 cursor-pointer" (click)="overlayOptions.hide(); sidebarComponent.abrirEditarLista(listaSeleccionada()); sidebarComponent.visiblePopupEditarList = true;">
-                            <i class="pi pi-pencil text-orange-400 mr-2"></i>
-                            <span>Editar nombre y descripcion</span>
-                        </div>
-                        <div class="hover:text-green-500 cursor-pointer" (click)="overlayOptions.hide(); sidebarComponent.abrirEditarLista(listaSeleccionada()); sidebarComponent.visiblePopupCompartirList = true;">
-                            <i [class]="listaSeleccionada()?.compartida ? 'pi pi-share-alt text-green-400 mr-2' : 'pi pi-cog text-green-400 mr-2'"></i>
-                            <span>{{ !listaSeleccionada()?.compartida ? 'Compartir' : 'Gestionar compartir' }} lista</span>
-                        </div>
-                        <div (click)="overlayOptions.hide(); sidebarComponent.eliminarListaEmit(listaSeleccionada(), $event)" class="hover:text-red-500 cursor-pointer">
-                            <i class="pi pi-trash text-red-400 mr-2"></i>
-                            <span>Eliminar lista</span>
-                        </div>
-                    </section>
-                </p-overlayPanel>
-            </section>
-            <section class="flex items-center gap-2 flex-wrap">
-                <h1 class="text-green-500 text-center grow break-all mb-0">{{ listaSeleccionada().nombre }}</h1>
-            </section>
-            @if (listaSeleccionada().descripcion) {
-                <textarea class="w-full bg-transparent border-none p-0 text-center" disabled>{{ listaSeleccionada()?.descripcion }}</textarea>
-            }
-            <input placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
-            <ul class="list-none flex flex-col gap-3 w-full p-0" cdkDropList (cdkDropListDropped)="drop($event)">
-                @for (listaElementos of elementosListaSeleccionada; track $index) {
-                    @if (listaElementos?.length) {
-                        <div class="flex gap-2 items-center">
-                            <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Pendiente' : 'Tachado' }}</h3>
-                            <p-badge [value]="listaElementos?.length || 0"/>
-                        </div>
-                    }
-
-                    @for (elemento of listaElementos || []; track elemento.nombre) {
-                        <div class="flex gap-2 items-center" cdkDrag [cdkDragStartDelay]="500">
-                            <p-checkbox 
-                            [(ngModel)]="elemento.checkeado"
-                            [binary]="true" 
-                            inputId="binary"
-                            (click)="toggleCheck(elemento)"
-                            />
-                            <!-- Placeholder del drag and drop -->
-                            <div class="h-[5px] bg-green-500 rounded" *cdkDragPlaceholder></div>
-                            <li class="flex gap-1 items-center w-full">
-                                @if (elemento.variedades?.length) {
-                                    <details [class]="(elemento?.checkeado ? 'bg-purple-900' : 'bg-blue-600') + ' p-2 rounded grow text-white'">
-                                        <summary class="flex flex-col justify-center gap-2 cursor-pointer">
+                    <p-overlayPanel #overlayOptions>
+                        <section class="flex flex-col gap-3">
+                            <div (click)="overlayOptions.hide(); sidebarComponent.predeterminarListaEmit(listaSeleccionada().id)" class="hover:text-blue-500 cursor-pointer">
+                                <i class="pi pi-bookmark text-blue-400 mr-2"></i>
+                                <span>Predeterminar lista</span>
+                            </div>
+                            <div class="hover:text-orange-500 cursor-pointer" (click)="overlayOptions.hide(); sidebarComponent.abrirEditarLista(listaSeleccionada()); sidebarComponent.visiblePopupEditarList = true;">
+                                <i class="pi pi-pencil text-orange-400 mr-2"></i>
+                                <span>Editar nombre y descripcion</span>
+                            </div>
+                            <div class="hover:text-green-500 cursor-pointer" (click)="overlayOptions.hide(); sidebarComponent.abrirEditarLista(listaSeleccionada()); sidebarComponent.visiblePopupCompartirList = true;">
+                                <i [class]="listaSeleccionada()?.compartida ? 'pi pi-share-alt text-green-400 mr-2' : 'pi pi-cog text-green-400 mr-2'"></i>
+                                <span>{{ !listaSeleccionada()?.compartida ? 'Compartir' : 'Gestionar compartir' }} lista</span>
+                            </div>
+                            <div (click)="overlayOptions.hide(); sidebarComponent.eliminarListaEmit(listaSeleccionada(), $event)" class="hover:text-red-500 cursor-pointer">
+                                <i class="pi pi-trash text-red-400 mr-2"></i>
+                                <span>Eliminar lista</span>
+                            </div>
+                        </section>
+                    </p-overlayPanel>
+                </section>
+                <section class="flex items-center gap-2 flex-wrap">
+                    <h1 class="text-green-500 text-center grow break-all mb-0">{{ listaSeleccionada().nombre }}</h1>
+                </section>
+                @if (listaSeleccionada().descripcion) {
+                    <textarea class="w-full bg-transparent border-none p-0 text-center" disabled>{{ listaSeleccionada()?.descripcion }}</textarea>
+                }
+                <input placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
+                <ul class="list-none flex flex-col gap-3 w-full p-0" cdkDropList (cdkDropListDropped)="drop($event)">
+                    @for (listaElementos of elementosListaSeleccionada; track $index) {
+                        @if (listaElementos?.length) {
+                            <div class="flex gap-2 items-center">
+                                <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Pendiente' : 'Tachado' }}</h3>
+                                <p-badge [value]="listaElementos?.length || 0"/>
+                            </div>
+                        }
+    
+                        @for (elemento of listaElementos || []; track elemento.nombre) {
+                            <div class="flex gap-2 items-center" cdkDrag [cdkDragStartDelay]="500">
+                                <p-checkbox 
+                                [(ngModel)]="elemento.checkeado"
+                                [binary]="true" 
+                                inputId="binary"
+                                (click)="toggleCheck(elemento)"
+                                />
+                                <!-- Placeholder del drag and drop -->
+                                <div class="h-[5px] bg-green-500 rounded" *cdkDragPlaceholder></div>
+                                <li class="flex gap-1 items-center w-full">
+                                    @if (elemento.variedades?.length) {
+                                        <details [class]="(elemento?.checkeado ? 'bg-purple-900' : 'bg-blue-600') + ' p-2 rounded grow text-white'">
+                                            <summary class="flex flex-col justify-center gap-2 cursor-pointer">
+                                                <span class="flex gap-2 items-center w-full">
+                                                    <i class="pi pi-th-large text-yellow-400" pTooltip="Variedades" tooltipPosition="top"></i>
+                                                    @if (elemento.cantidad) {
+                                                        <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded justify-self-end">
+                                                            <span>{{elemento.cantidad}}</span>
+                                                            @if (elemento.unidadMedida) {
+                                                                <span>{{elemento.unidadMedida}}</span>
+                                                            }
+                                                        </section>
+                                                    }
+                                                    <span class="grow" [ngClass]="{'line-through': elemento?.checkeado}">{{elemento.nombre}}</span>
+                                                </span>
+                                                @if (elemento?.descripcion) {
+                                                    <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
+                                                }
+                                            </summary>
+                                            <ul class="flex flex-col gap-2 py-2">
+                                                @for (variedad of elemento.variedades; track $index) {
+                                                <li>{{ variedad }}</li>
+                                                }
+                                            </ul>
+                                        </details>
+                                    } @else {
+                                        <div [class]="(elemento?.checkeado ? 'bg-purple-900' : 'bg-blue-600') + ' bg-blue-600 p-2 rounded grow flex flex-col justify-center gap-2 text-white'">
                                             <span class="flex gap-2 items-center w-full">
-                                                <i class="pi pi-th-large text-yellow-400" pTooltip="Variedades" tooltipPosition="top"></i>
                                                 @if (elemento.cantidad) {
-                                                    <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded justify-self-end">
+                                                    <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded">
                                                         <span>{{elemento.cantidad}}</span>
                                                         @if (elemento.unidadMedida) {
                                                             <span>{{elemento.unidadMedida}}</span>
@@ -109,40 +135,20 @@
                                             @if (elemento?.descripcion) {
                                                 <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
                                             }
-                                        </summary>
-                                        <ul class="flex flex-col gap-2 py-2">
-                                            @for (variedad of elemento.variedades; track $index) {
-                                            <li>{{ variedad }}</li>
-                                            }
-                                        </ul>
-                                    </details>
-                                } @else {
-                                    <div [class]="(elemento?.checkeado ? 'bg-purple-900' : 'bg-blue-600') + ' bg-blue-600 p-2 rounded grow flex flex-col justify-center gap-2 text-white'">
-                                        <span class="flex gap-2 items-center w-full">
-                                            @if (elemento.cantidad) {
-                                                <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded">
-                                                    <span>{{elemento.cantidad}}</span>
-                                                    @if (elemento.unidadMedida) {
-                                                        <span>{{elemento.unidadMedida}}</span>
-                                                    }
-                                                </section>
-                                            }
-                                            <span class="grow" [ngClass]="{'line-through': elemento?.checkeado}">{{elemento.nombre}}</span>
-                                        </span>
-                                        @if (elemento?.descripcion) {
-                                            <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
-                                        }
+                                        </div>
+                                    }
+                                    <div class="flex items-center gap-2">
+                                        <i class="ms-1 pi pi-pencil cursor-pointer text-orange-400" pTooltip="Editar" tooltipPosition="left" (click)="openEditarElemento(elemento)"></i>
+                                        <i class="pi pi-times-circle text-red-600 cursor-pointer" pTooltip="Borrar elemento" tooltipPosition="left" (click)="borrarElemento(elemento)"></i>
                                     </div>
-                                }
-                                <div class="flex items-center gap-2">
-                                    <i class="ms-1 pi pi-pencil cursor-pointer text-orange-400" pTooltip="Editar" tooltipPosition="left" (click)="openEditarElemento(elemento)"></i>
-                                    <i class="pi pi-times-circle text-red-600 cursor-pointer" pTooltip="Borrar elemento" tooltipPosition="left" (click)="borrarElemento(elemento)"></i>
-                                </div>
-                            </li>
-                        </div>
+                                </li>
+                            </div>
+                        }
                     }
-                }
-            </ul>
+                </ul>
+            } @else {
+                <h3 class="w-full text-center">No hay datos a mostrar</h3>
+            }
         }
     </main>
     <app-footer class="w-full"></app-footer>
@@ -270,6 +276,7 @@ styleClass="p-3"
     maximizable
     [dismissableMask]="false"
     styleClass="p-3 w-[500px]"
+    (onShow)="ponerFocusInputPrincipal('autocomplete')"
 >
     <ng-template pTemplate="header">
         <h2>Añadir elemento</h2>
@@ -283,6 +290,7 @@ styleClass="p-3"
         completeOnFocus
         placeholder="Nombre del elemento"
         dropdown
+        #inputPrincipal
         styleClass="w-full"
         class="w-full"
         emptyMessage="Crea un nuevo elemento"
@@ -356,7 +364,7 @@ styleClass="p-3"
         completeOnFocus
         placeholder="Nombre del elemento"
         dropdown
-        styleClass="w-full"
+        styleClass="w-full inputPrincipal"
         class="w-full"
         emptyMessage="Crea un nuevo elemento"
         optionValue="nombre"
@@ -416,6 +424,7 @@ styleClass="p-3"
     maximizable
     [dismissableMask]="false"
     styleClass="p-3 w-[500px]"
+    (onShow)="ponerFocusInputPrincipal()"
 >
     <ng-template pTemplate="header">
         <h2>Añadir lista de elementos</h2>
@@ -423,7 +432,7 @@ styleClass="p-3"
     
     <form [formGroup]="formImportElementoEstructurado" (ngSubmit)="importElementos()" (keydown.control.enter)="importElementos()" class="flex flex-col items-center gap-3 w-full">
         <h4>Todos los elementos con el mismo nombre importados se combinarán y des-tacharán</h4>
-        <textarea placeholder="Importará elementos por línea ignorando los que estén entre [ ] e ignorando la primera línea (título)" pInputText id="texto" class="flex-auto w-full p-3" autocomplete="off" formControlName="texto"></textarea>
+        <textarea placeholder="Importará elementos por línea ignorando los que estén entre [ ] e ignorando la primera línea (título)" pInputText id="texto" class="flex-auto w-full p-3 inputPrincipal" autocomplete="off" formControlName="texto"></textarea>
         <section class="flex items-center gap-2 w-full justify-end">
             <p-checkbox formControlName="quitarPrimeraLinea" inputId="quitarPrimeraLinea" [binary]="true"/>
             <label for="quitarPrimeraLinea">Quitar primera línea</label>

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, computed, signal, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, ElementRef, signal, ViewChild } from '@angular/core';
 import { User } from '@angular/fire/auth';
 import { ReactiveFormsModule, FormsModule, FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -10,7 +10,7 @@ import { StorageService } from './shared/services/storage.service';
 import { PrimeNgModule } from './shared/style/prime-ng/prime-ng.module';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 import { ElementoLista, Lista } from './shared/interfaces/lista';
-import { AutoCompleteCompleteEvent } from 'primeng/autocomplete';
+import { AutoComplete, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { normalizarCadena } from './shared/utils/util';
 import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray} from '@angular/cdk/drag-drop';
 
@@ -23,6 +23,7 @@ import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray} from '@angular/cdk/d
 })
 export class AppComponent {
   @ViewChild('sidebarRef') sidebarComponent!: SidebarComponent;
+  @ViewChild('inputPrincipal') inputPrincipal!: AutoComplete ;
 
   /* Auth */
   messages: ToastMessageOptions[] = [];
@@ -44,6 +45,7 @@ export class AppComponent {
   listaSeleccionada = computed(() => this.listas().find(lista => lista?.id === this.idListaSeleccionada()) || (this.listas()[0] || null));
   nombreElementoEditando = null;
   listaFiltradaElementos: ElementoLista[] = [];
+  cargando: boolean = true;
   
   public get elementosListaSeleccionada() : ElementoLista[][] {
     let elementos = [
@@ -85,6 +87,7 @@ export class AppComponent {
     }
     this.inicializarDatosBBDD().then(() => {
       // Para que solo se ejecute una vez si necesitamos que se ejecute algo
+      this.cargando = false;
     });
     this.cdr.detectChanges();
   }
@@ -741,5 +744,15 @@ export class AppComponent {
       rejectVisible: false,
       acceptLabel: 'Entendido',
     });
+  }
+
+  ponerFocusInputPrincipal(tipoInput?: string) {
+    setTimeout(() => {
+      if (tipoInput == 'autocomplete') {
+        this.inputPrincipal?.inputEL?.nativeElement?.focus();
+      } else {
+        (document.querySelector('.inputPrincipal') as HTMLTextAreaElement)?.focus();
+      }
+    }, 0);
   }
 }

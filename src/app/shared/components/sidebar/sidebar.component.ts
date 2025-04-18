@@ -1,4 +1,4 @@
-import { Component, computed, effect, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { PrimeNgModule } from '../../style/prime-ng/prime-ng.module';
 import { MessageService, ToastMessageOptions, ConfirmationService } from 'primeng/api';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -16,6 +16,7 @@ import { normalizarCadena } from '../../utils/util';
 })
 export class SidebarComponent {
   @Input() listas = signal<Lista[]>([]);
+  @Input() cargando: boolean = true;
   listasFiltradasElementos: Lista[] = [];
   @Input() idListaSeleccionada = signal<string>('');
   @Output() setLista = new EventEmitter<Lista>();
@@ -200,5 +201,11 @@ export class SidebarComponent {
       rejectVisible: false,
       acceptLabel: 'Entendido',
     });
+  }
+
+  ponerFocusInputPrincipal() {
+    setTimeout(() => {
+      (document.querySelector('.inputPrincipal') as HTMLTextAreaElement)?.focus();
+    }, 0);
   }
 }
