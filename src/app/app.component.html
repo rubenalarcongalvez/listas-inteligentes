@@ -75,32 +75,54 @@
                 }
                 <input placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
                 <ul class="list-none flex flex-col gap-3 w-full p-0" cdkDropList (cdkDropListDropped)="drop($event)">
-                    @for (listaElementos of elementosListaSeleccionada; track $index) {
-                        @if (listaElementos?.length) {
-                            <div class="flex gap-2 items-center">
-                                <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Pendiente' : 'Tachado' }}</h3>
-                                <p-badge [value]="listaElementos?.length || 0"/>
-                            </div>
-                        }
-    
-                        @for (elemento of listaElementos || []; track elemento.nombre) {
-                            <div class="flex gap-2 items-center" cdkDrag [cdkDragStartDelay]="500">
-                                <p-checkbox 
-                                [(ngModel)]="elemento.checkeado"
-                                [binary]="true" 
-                                inputId="binary"
-                                (click)="toggleCheck(elemento)"
-                                />
-                                <!-- Placeholder del drag and drop -->
-                                <div class="h-[5px] bg-green-500 rounded" *cdkDragPlaceholder></div>
-                                <li class="flex gap-1 items-center w-full">
-                                    @if (elemento.variedades?.length) {
-                                        <details [class]="(elemento?.checkeado ? 'bg-purple-900' : 'bg-blue-600') + ' p-2 rounded grow text-white'">
-                                            <summary class="flex flex-col justify-center gap-2 cursor-pointer">
+                    <!-- Lo separamos asi para poder ordenar con Drag and Drop -->
+                    @for (listaElementos of [listaSeleccionada().elementos || [], listaSeleccionada().elementos || []]; let index0 = $index; track index0) {
+                        <div class="flex gap-2 items-center">
+                            <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Pendiente' : 'Tachado' }}</h3>
+                            <p-badge [value]="elementosCheckeadosLista(index0 == 1)"/>
+                        </div>
+                        @for (elemento of listaSeleccionada().elementos || []; let index1 = $index; track index1) {
+                            @if (index0 == 1 ? elemento?.checkeado : !elemento?.checkeado) {
+                                <div class="flex gap-2 items-center" cdkDrag [cdkDragStartDelay]="500">
+                                    <p-checkbox 
+                                    [(ngModel)]="elemento.checkeado"
+                                    [binary]="true" 
+                                    inputId="binary"
+                                    (click)="toggleCheck(elemento)"
+                                    />
+                                    <!-- Placeholder del drag and drop -->
+                                    <div class="h-[5px] bg-green-500 rounded" *cdkDragPlaceholder></div>
+                                    <li class="flex gap-1 items-center w-full">
+                                        @if (elemento.variedades?.length) {
+                                            <details [class]="(elemento?.checkeado ? 'bg-purple-900' : 'bg-blue-600') + ' p-2 rounded grow text-white'">
+                                                <summary class="flex flex-col justify-center gap-2 cursor-pointer">
+                                                    <span class="flex gap-2 items-center w-full">
+                                                        <i class="pi pi-th-large text-yellow-400" pTooltip="Variedades" tooltipPosition="top"></i>
+                                                        @if (elemento.cantidad) {
+                                                            <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded justify-self-end">
+                                                                <span>{{elemento.cantidad}}</span>
+                                                                @if (elemento.unidadMedida) {
+                                                                    <span>{{elemento.unidadMedida}}</span>
+                                                                }
+                                                            </section>
+                                                        }
+                                                        <span class="grow" [ngClass]="{'line-through': elemento?.checkeado}">{{elemento.nombre}}</span>
+                                                    </span>
+                                                    @if (elemento?.descripcion) {
+                                                        <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
+                                                    }
+                                                </summary>
+                                                <ul class="flex flex-col gap-2 py-2">
+                                                    @for (variedad of elemento.variedades; let index3 = $index; track index3) {
+                                                    <li>{{ variedad }}</li>
+                                                    }
+                                                </ul>
+                                            </details>
+                                        } @else {
+                                            <div [class]="(elemento?.checkeado ? 'bg-purple-900' : 'bg-blue-600') + ' bg-blue-600 p-2 rounded grow flex flex-col justify-center gap-2 text-white'">
                                                 <span class="flex gap-2 items-center w-full">
-                                                    <i class="pi pi-th-large text-yellow-400" pTooltip="Variedades" tooltipPosition="top"></i>
                                                     @if (elemento.cantidad) {
-                                                        <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded justify-self-end">
+                                                        <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded">
                                                             <span>{{elemento.cantidad}}</span>
                                                             @if (elemento.unidadMedida) {
                                                                 <span>{{elemento.unidadMedida}}</span>
@@ -112,37 +134,15 @@
                                                 @if (elemento?.descripcion) {
                                                     <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
                                                 }
-                                            </summary>
-                                            <ul class="flex flex-col gap-2 py-2">
-                                                @for (variedad of elemento.variedades; track $index) {
-                                                <li>{{ variedad }}</li>
-                                                }
-                                            </ul>
-                                        </details>
-                                    } @else {
-                                        <div [class]="(elemento?.checkeado ? 'bg-purple-900' : 'bg-blue-600') + ' bg-blue-600 p-2 rounded grow flex flex-col justify-center gap-2 text-white'">
-                                            <span class="flex gap-2 items-center w-full">
-                                                @if (elemento.cantidad) {
-                                                    <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded">
-                                                        <span>{{elemento.cantidad}}</span>
-                                                        @if (elemento.unidadMedida) {
-                                                            <span>{{elemento.unidadMedida}}</span>
-                                                        }
-                                                    </section>
-                                                }
-                                                <span class="grow" [ngClass]="{'line-through': elemento?.checkeado}">{{elemento.nombre}}</span>
-                                            </span>
-                                            @if (elemento?.descripcion) {
-                                                <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
-                                            }
+                                            </div>
+                                        }
+                                        <div class="flex items-center gap-2">
+                                            <i class="ms-1 pi pi-pencil cursor-pointer text-orange-400" pTooltip="Editar" tooltipPosition="left" (click)="openEditarElemento(elemento)"></i>
+                                            <i class="pi pi-times-circle text-red-600 cursor-pointer" pTooltip="Borrar elemento" tooltipPosition="left" (click)="borrarElemento(elemento)"></i>
                                         </div>
-                                    }
-                                    <div class="flex items-center gap-2">
-                                        <i class="ms-1 pi pi-pencil cursor-pointer text-orange-400" pTooltip="Editar" tooltipPosition="left" (click)="openEditarElemento(elemento)"></i>
-                                        <i class="pi pi-times-circle text-red-600 cursor-pointer" pTooltip="Borrar elemento" tooltipPosition="left" (click)="borrarElemento(elemento)"></i>
-                                    </div>
-                                </li>
-                            </div>
+                                    </li>
+                                </div>
+                            }
                         }
                     }
                 </ul>

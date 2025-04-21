@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
-import { addDoc, collection, deleteDoc, doc, DocumentData, getDoc, getDocs, query, QuerySnapshot, setDoc, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, DocumentData, getDoc, getDocs, onSnapshot, query, QuerySnapshot, setDoc, where } from 'firebase/firestore';
 import { LoggedUser } from '../interfaces/loggedUser';
 import { from, map, Observable } from 'rxjs';
 import { Lista } from '../interfaces/lista';
@@ -45,29 +45,33 @@ export class StorageService {
   =            Database management            =
   =============================================*/
 
-  getFilteredDocumentsByUID(uid: any): Observable<DocumentData[]> {
+  getFilteredDocumentsByUID(uid: any): Observable<Lista[]> {
     const colRef = collection(this.firestore, 'listas-inteligentes/listas-doc/listas');
     const q = query(colRef, where('uidsPermitidos', 'array-contains', uid));
   
-    const promise = getDocs(q).then(snapshot => {
-      const documentos = snapshot.docs.map(doc => {
-        const data = doc.data();
-        const { uid, ...resto } = data;
+    return new Observable<Lista[]>(subscriber => {
+      const unsubscribe = onSnapshot(q, snapshot => {
+        const documentos = snapshot.docs.map(doc => {
+          const data = doc.data();
+          const { uid, ...resto } = data;
   
-        return {
-          id: doc.id,
-          ...resto
-        } as Lista;
-      });
+          return {
+            id: doc.id,
+            ...resto
+          } as Lista;
+        });
   
-      // Ordenamos por nombre normalizado
-      return documentos.sort((a, b) =>
-        normalizarCadena(a.nombre).localeCompare(normalizarCadena(b.nombre))
-      );
+        // Ordenamos
+        documentos.sort((a, b) =>
+          normalizarCadena(a.nombre).localeCompare(normalizarCadena(b.nombre))
+        );
+  
+        subscriber.next(documentos);
+      }, error => subscriber.error(error));
+  
+      return unsubscribe;
     });
-  
-    return from(promise);
-  }
+  }  
 
   getListaCompartidaPorId(idLista: string): Observable<Lista> {
     const docRef = doc(this.firestore, `listas-inteligentes/listas-doc/listas/${idLista}`);
@@ -124,13 +128,15 @@ export class StorageService {
   getListaPredeterminada(uid: string): Observable<string | null> {
     const docRef = doc(this.firestore, `listas-inteligentes/usuarios-settings/uids/${uid}`);
   
-    const promise = getDoc(docRef).then(snapshot => {
-      const data = snapshot.data();
-      return data?.['idListaPredeterminada'] ?? null;
-    });
+    return new Observable<string | null>(subscriber => {
+      const unsubscribe = onSnapshot(docRef, snapshot => {
+        const data = snapshot.data();
+        subscriber.next(data?.['idListaPredeterminada'] ?? null);
+      }, error => subscriber.error(error));
   
-    return from(promise);
-  }
+      return unsubscribe;
+    });
+  }  
   
   setListaPredeterminada(uid: string, idListaPredeterminada: string): Observable<void> { 
     const docRef = doc(this.firestore, `listas-inteligentes/usuarios-settings/uids/${uid}`);

@@ -42,20 +42,14 @@ export class AppComponent {
   listas = signal<Lista[]>([]);
   nombreFiltrar = signal<string>('');
   idListaSeleccionada = signal<string>('');
-  listaSeleccionada = computed(() => this.listas().find(lista => lista?.id === this.idListaSeleccionada()) || (this.listas()[0] || null));
+  listaSeleccionada = computed(() => {
+    let listaSeleccionadaFinal = this.listas().find(lista => lista?.id === this.idListaSeleccionada()) || (this.listas()[0] || null);
+    listaSeleccionadaFinal?.elementos?.sort((a, b) => Number(a?.checkeado) - Number(b?.checkeado));
+    return listaSeleccionadaFinal;
+  });
   nombreElementoEditando = null;
   listaFiltradaElementos: ElementoLista[] = [];
   cargando: boolean = true;
-  
-  public get elementosListaSeleccionada() : ElementoLista[][] {
-    let elementos = [
-      this.listaSeleccionada()?.elementos?.filter(e => !e?.checkeado && (!this.nombreFiltrar() || normalizarCadena(e?.nombre).includes(normalizarCadena(this.nombreFiltrar())))),
-      this.listaSeleccionada()?.elementos?.filter(e => e?.checkeado && (!this.nombreFiltrar() || normalizarCadena(e?.nombre).includes(normalizarCadena(this.nombreFiltrar()))))
-    ];
-
-    return elementos;
-  }
-  
 
   constructor(private confirmationService: ConfirmationService, private messageService: MessageService, private cdr: ChangeDetectorRef, private storageService: StorageService, private authService: AuthService, private fb: FormBuilder) {
     this.updateEmailForm = this.fb.group({
@@ -203,38 +197,28 @@ export class AppComponent {
 
   async inicializarDatosBBDD(): Promise<void> {
     const user = await firstValueFrom(this.authService.getCurrentUserPeticion());
-
-    if (!user) {
-      return;
-    }
+    if (!user) return;
   
-    const promesas: Promise<any>[] = [];
+    // Escucha en tiempo real las listas
+    this.storageService.getFilteredDocumentsByUID(user.uid).subscribe({
+      next: (listas) => {
+        this.listas.set(listas);
+      },
+      error: (err) => console.error(err)
+    });
   
-    // Cargar listas
-    promesas.push(
-      firstValueFrom(this.storageService.getFilteredDocumentsByUID(user.uid))
-        .then((resp: Lista[]) => {
-          if (resp) {
-            this.listas.set(resp);
-          }
-        })
-        .catch((err) => console.error(err))
-    );
-    
-    // Cargar lista predeterminada
-    promesas.push(
-      firstValueFrom(this.storageService.getListaPredeterminada(user.uid))
-        .then((resp: string) => {
-          if (resp) {
-            this.idListaSeleccionada?.set(this.listas()?.some(lista => lista?.id === resp) ? resp : this.listas()[0]?.id || null);
-          }
-        })
-        .catch((err) => console.error(err))
-    );
-  
-    // Esperar a que todas las promesas terminen
-    await Promise.all(promesas);
-  }
+    // Escucha en tiempo real la lista predeterminada
+    this.storageService.getListaPredeterminada(user.uid).subscribe({
+      next: (idPredet) => {
+        const listasActuales = this.listas();
+        const idSeleccionar = listasActuales?.some(lista => lista?.id === idPredet)
+          ? idPredet
+          : listasActuales[0]?.id || null;
+        this.idListaSeleccionada?.set(idSeleccionar);
+      },
+      error: (err) => console.error(err)
+    });
+  }  
 
   guardarLista(lista: Lista, dejarDeCompartir: boolean = false, confirmar: boolean = true): any {
     if (!this.authService.getCurrentUser()?.uid) {
@@ -754,5 +738,9 @@ export class AppComponent {
         (document.querySelector('.inputPrincipal') as HTMLTextAreaElement)?.focus();
       }
     }, 0);
+  }
+
+  elementosCheckeadosLista(checkeado: boolean) {
+    return this.listaSeleccionada().elementos.filter(ele => checkeado ? ele?.checkeado : !ele?.checkeado).length || 0;
   }
 }
