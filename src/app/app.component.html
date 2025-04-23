@@ -73,7 +73,10 @@
                 @if (listaSeleccionada().descripcion) {
                     <textarea class="w-full bg-transparent border-none p-0 text-center" disabled>{{ listaSeleccionada()?.descripcion }}</textarea>
                 }
-                <input placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
+                <div class="flex gap-2 items-center">
+                    <input placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
+                    <p-button [icon]="'pi ' + (modoFiltradoTotal ? 'pi-sparkles' : 'pi-filter')" severity="info" [pTooltip]="modoFiltradoTotal ? 'Activar filtrado resaltar' : 'Activar filtrado total'" (onClick)="modoFiltradoTotal = !modoFiltradoTotal"></p-button>
+                </div>
                 <ul class="list-none flex flex-col gap-3 w-full p-0" cdkDropList (cdkDropListDropped)="drop($event)">
                     <!-- Lo separamos asi para poder ordenar con Drag and Drop -->
                     @for (listaElementos of [listaSeleccionada().elementos || [], listaSeleccionada().elementos || []]; let index0 = $index; track index0) {
@@ -81,9 +84,10 @@
                             <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Pendiente' : 'Tachado' }}</h3>
                             <p-badge [value]="elementosCheckeadosLista(index0 == 1)"/>
                         </div>
-                        @for (elemento of listaSeleccionada().elementos || []; let index1 = $index; track index1) {
+                        @for (elemento of listaElementos || []; let index1 = $index; track index1) {
                             @if (index0 == 1 ? elemento?.checkeado : !elemento?.checkeado) {
-                                <div class="flex gap-2 items-center" cdkDrag [cdkDragStartDelay]="500">
+                                <!-- Para el filtrado, aplicamos este ngClass para que funcione con el drag and drop -->
+                                <div [class]="'flex gap-2 items-center ' + claseSiElementoPasaFiltro(elemento?.nombre)" [cdkDragDisabled]="modoFiltradoTotal && nombreFiltrar()?.length != 0" cdkDrag [cdkDragStartDelay]="500">
                                     <p-checkbox 
                                     [(ngModel)]="elemento.checkeado"
                                     [binary]="true" 

@@ -23,7 +23,8 @@ import {CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray} from '@angular/cdk/d
 })
 export class AppComponent {
   @ViewChild('sidebarRef') sidebarComponent!: SidebarComponent;
-  @ViewChild('inputPrincipal') inputPrincipal!: AutoComplete ;
+  @ViewChild('inputPrincipal') inputPrincipal!: AutoComplete;
+  modoFiltradoTotal: boolean = true;
 
   /* Auth */
   messages: ToastMessageOptions[] = [];
@@ -50,6 +51,13 @@ export class AppComponent {
   nombreElementoEditando = null;
   listaFiltradaElementos: ElementoLista[] = [];
   cargando: boolean = true;
+
+  claseSiElementoPasaFiltro(nombreElemento: string): string {
+    const resultado = !this.nombreFiltrar() || normalizarCadena(nombreElemento)?.includes(normalizarCadena(this.nombreFiltrar()));
+
+    if (resultado) return '';
+    return this.modoFiltradoTotal ? 'hidden' : 'opacity-25';
+  }
 
   constructor(private confirmationService: ConfirmationService, private messageService: MessageService, private cdr: ChangeDetectorRef, private storageService: StorageService, private authService: AuthService, private fb: FormBuilder) {
     this.updateEmailForm = this.fb.group({
@@ -81,7 +89,6 @@ export class AppComponent {
     }
     this.inicializarDatosBBDD().then(() => {
       // Para que solo se ejecute una vez si necesitamos que se ejecute algo
-      this.cargando = false;
     });
     this.cdr.detectChanges();
   }
@@ -215,8 +222,11 @@ export class AppComponent {
           ? idPredet
           : listasActuales[0]?.id || null;
         this.idListaSeleccionada?.set(idSeleccionar);
+        this.cargando = false;
       },
-      error: (err) => console.error(err)
+      error: (err) => {
+        console.error(err); this.cargando = false;
+      }
     });
   }  
 

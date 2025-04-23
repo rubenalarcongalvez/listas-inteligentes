@@ -5,6 +5,7 @@ export interface Lista {
     id?: string,
     descripcion?: string,
     elementos?: ElementoLista[],
+    categorias?: string[]
 }
 
 export interface ElementoLista {
@@ -13,5 +14,6 @@ export interface ElementoLista {
     cantidad?: number,
     unidadMedida?: string,
     variedades?: string[] // Hay que hacer una transformacion de string con este formato 
-    checkeado: boolean
+    checkeado: boolean,
+    categoria?: string
 }
