@@ -34,6 +34,8 @@ export class AppComponent {
   visiblePopupAddElemento: boolean = false;
   visiblePopupEditElemento: boolean = false;
   visiblePopupImportElementos: boolean = false;
+  visiblePopupGestionarCategorias: boolean = false;
+  visiblePopupEditarCategoria: boolean = false;
   updateEmailForm: FormGroup;
   updatePasswordForm: FormGroup;
   formAddEditElemento!: FormGroup;
@@ -42,14 +44,32 @@ export class AppComponent {
   /* Datos */
   listas = signal<Lista[]>([]);
   nombreFiltrar = signal<string>('');
+  nombreCategoriaForm = signal<string>('');
+  nombreCategoriaAnterior = signal<string>('');
   idListaSeleccionada = signal<string>('');
   listaSeleccionada = computed(() => {
     let listaSeleccionadaFinal = this.listas().find(lista => lista?.id === this.idListaSeleccionada()) || (this.listas()[0] || null);
-    listaSeleccionadaFinal?.elementos?.sort((a, b) => Number(a?.checkeado) - Number(b?.checkeado));
+    
+    listaSeleccionadaFinal?.elementos?.sort((a, b) => {
+      const checkComp = Number(a?.checkeado) - Number(b?.checkeado);
+      if (checkComp !== 0) {
+        return checkComp;
+      }
+  
+      const categoriaA = normalizarCadena(a?.categoria || '');
+      const categoriaB = normalizarCadena(b?.categoria || '');
+  
+      /* Si la categoria esta vacia, se pone lo ultimo */
+      if (!categoriaA && categoriaB) return 1;
+      if (categoriaA && !categoriaB) return -1;
+      return categoriaA.localeCompare(categoriaB);
+    });
+  
     return listaSeleccionadaFinal;
-  });
+  });   
   nombreElementoEditando = null;
   listaFiltradaElementos: ElementoLista[] = [];
+  listaFiltradaCategorias: string[] = [];
   cargando: boolean = true;
 
   claseSiElementoPasaFiltro(nombreElemento: string): string {
@@ -76,6 +96,7 @@ export class AppComponent {
       unidadMedida: [''],
       variedadActual: [[]],
       variedades: [''],
+      categoria: [''],
     });
     this.formImportElementoEstructurado = this.fb.group({
       texto: ['', Validators.required],
@@ -272,6 +293,19 @@ export class AppComponent {
     this.listaFiltradaElementos = filtered;
   }
 
+  filtrarNombresCategorias(event: AutoCompleteCompleteEvent) {
+    let filtered: any[] = [];
+    let query = event.query;
+
+    this.listaSeleccionada()?.categorias?.forEach(categoria => {
+      if (normalizarCadena(categoria).indexOf(normalizarCadena(query)) == 0) {
+        filtered.push(categoria);
+      }
+    });
+
+    this.listaFiltradaCategorias = filtered;
+  }
+
   addElemento() {
     if (!this.authService.getCurrentUser()?.uid) {
       this.messageService.add({
@@ -287,6 +321,8 @@ export class AppComponent {
       if (!this.listaSeleccionada().elementos) {
         this.listaSeleccionada().elementos = [];
       }
+
+      const categoriaElemento = this.formAddEditElemento?.get('categoria')?.value && (normalizarCadena(this.formAddEditElemento?.get('categoria')?.value) != normalizarCadena('Sin categoria')) ? this.formAddEditElemento?.get('categoria')?.value : null;
       
       let elementoAModificar = this.listaSeleccionada().elementos?.find(elemento => elemento.nombre.toLowerCase() == this.formAddEditElemento.get('nombre')?.value.toLowerCase());
       
@@ -301,8 +337,17 @@ export class AppComponent {
           cantidad: this.formAddEditElemento.get('cantidad')?.value,
           unidadMedida: this.formAddEditElemento.get('unidadMedida')?.value,
           variedades: this.formAddEditElemento.get('variedades')?.value || [],
+          categoria: categoriaElemento,
         }
         this.listaSeleccionada().elementos.push(elementoAModificar);
+        /* Si no existia la categoria antes, la creamos */
+        if (categoriaElemento && !this.listaSeleccionada()?.categorias?.map(cat => normalizarCadena(cat)).includes(normalizarCadena(categoriaElemento))) {
+          if (this.listaSeleccionada()?.categorias?.length) {
+            this.listaSeleccionada().categorias.push(categoriaElemento);
+          } else {
+            this.listaSeleccionada().categorias = [categoriaElemento];
+          }
+        }
 
         this.guardarCambiosElemento();
       }
@@ -316,12 +361,22 @@ export class AppComponent {
       // Si el elemento no estaba tachado preguntamos si quiere añadir o cancelamos
       this.confirmationService.confirm({
         message: 'El elemento ya existe, se añadirá la cantidad y variedades seleccionadas al elemento existente',
-        icon: 'pi pi-cart-plus',
+        icon: 'pi-cart-plus',
         rejectButtonStyleClass: 'bg-white text-black p-button-sm',
         acceptButtonStyleClass: 'bg-green-400 text-black p-button-sm',
         rejectLabel: 'Cancelar',
         acceptLabel: 'Confirmar',
         accept: () => {
+          /* Si no existia la categoria antes, la creamos */
+          const categoriaElemento = this.formAddEditElemento?.get('categoria')?.value && (normalizarCadena(this.formAddEditElemento?.get('categoria')?.value) != normalizarCadena('Sin categoria')) ? this.formAddEditElemento?.get('categoria')?.value : null;
+          if (categoriaElemento && !this.listaSeleccionada()?.categorias?.map(cat => normalizarCadena(cat)).includes(normalizarCadena(categoriaElemento))) {
+            if (this.listaSeleccionada()?.categorias?.length) {
+              this.listaSeleccionada().categorias.push(categoriaElemento);
+            } else {
+              this.listaSeleccionada().categorias = [categoriaElemento];
+            }
+          }
+
           // Si tenia descripcion, se deja, excepto si tiene una nueva
           elementoAModificar.descripcion = (elementoAModificar.descripcion && !this.formAddEditElemento.get('descripcion')?.value) ? elementoAModificar.descripcion : this.formAddEditElemento.get('descripcion')?.value;
 
@@ -356,12 +411,22 @@ export class AppComponent {
     } else {
       this.confirmationService.confirm({
         message: 'El elemento ya existe y estaba tachado. Se sobreescribirá y des-tachará',
-        icon: 'pi pi-check-square',
+        icon: 'pi-check-square',
         rejectButtonStyleClass: 'bg-white text-black p-button-sm',
         acceptButtonStyleClass: 'bg-green-400 text-black p-button-sm',
         rejectLabel: 'Cancelar',
         acceptLabel: 'Confirmar',
         accept: () => {
+          /* Si no existia la categoria antes, la creamos */
+          const categoriaElemento = this.formAddEditElemento?.get('categoria')?.value && (normalizarCadena(this.formAddEditElemento?.get('categoria')?.value) != normalizarCadena('Sin categoria')) ? this.formAddEditElemento?.get('categoria')?.value : null;
+          if (categoriaElemento && !this.listaSeleccionada()?.categorias?.map(cat => normalizarCadena(cat)).includes(normalizarCadena(categoriaElemento))) {
+            if (this.listaSeleccionada()?.categorias?.length) {
+              this.listaSeleccionada().categorias.push(categoriaElemento);
+            } else {
+              this.listaSeleccionada().categorias = [categoriaElemento];
+            }
+          }
+
           // Lo sustituimos por lo nuevo (si lo nuevo no tiene nada y lo antiguo si, se queda lo antiguo)
           elementoAModificar.nombre = this.formAddEditElemento.get('nombre')?.value;
           elementoAModificar.descripcion = (elementoAModificar.descripcion && !this.formAddEditElemento.get('descripcion')?.value) ? elementoAModificar.descripcion : this.formAddEditElemento.get('descripcion')?.value;
@@ -399,6 +464,7 @@ export class AppComponent {
       unidadMedida: [elemento?.unidadMedida],
       variedadActual: [''],
       variedades: [elemento?.variedades],
+      categoria: [elemento?.categoria || null],
     });
     this.nombreElementoEditando = elemento.nombre;
     this.visiblePopupEditElemento = true;
@@ -420,6 +486,8 @@ export class AppComponent {
     }
 
     if (this.formAddEditElemento.valid) {
+      const categoriaElemento = this.formAddEditElemento?.get('categoria')?.value && (normalizarCadena(this.formAddEditElemento?.get('categoria')?.value) != normalizarCadena('Sin categoria')) ? this.formAddEditElemento?.get('categoria')?.value : null;
+
       // Buscamos el elemento
       let elementoBuscado = this.listaSeleccionada().elementos?.find(elemento => elemento.nombre.toLowerCase() == this.formAddEditElemento.get('nombre')?.value.toLowerCase());
       let elementoAModificar = this.listaSeleccionada().elementos.find(elemento => elemento.nombre == this.nombreElementoEditando);
@@ -436,6 +504,16 @@ export class AppComponent {
         elementoAModificar.cantidad = this.formAddEditElemento.get('cantidad')?.value;
         elementoAModificar.unidadMedida = this.formAddEditElemento.get('unidadMedida')?.value;
         elementoAModificar.variedades = this.formAddEditElemento.get('variedades')?.value || [];
+        elementoAModificar.categoria = categoriaElemento;
+
+        /* Si no existia la categoria antes, la creamos */
+        if (categoriaElemento && !this.listaSeleccionada()?.categorias?.map(cat => normalizarCadena(cat)).includes(normalizarCadena(categoriaElemento))) {
+          if (this.listaSeleccionada()?.categorias?.length) {
+            this.listaSeleccionada().categorias.push(categoriaElemento);
+          } else {
+            this.listaSeleccionada().categorias = [categoriaElemento];
+          }
+        }
   
         this.guardarCambiosElemento(true, 'Elemento editado');
       }
@@ -500,7 +578,7 @@ export class AppComponent {
   borrarElemento(elemento: ElementoLista) {
     this.confirmationService.confirm({
       message: '¿Seguro que quieres borrar el elemento?',
-      icon: 'pi pi-exclamation-triangle',
+      icon: 'pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger p-button-sm',
       rejectButtonStyleClass: 'bg-white text-black p-button-sm',
       rejectLabel: 'Cancelar',
@@ -728,7 +806,20 @@ export class AppComponent {
     }
   }
 
+  /* No quiero que se pueda tachar/des-tachar con drag and drop, pero si cambiar de categoria con esto */
   drop(event: CdkDragDrop<string[]>) {
+    /* Si la categoria del elemento no es la misma que donde la dejamos, la cambiamos */
+    if (this.listaSeleccionada()?.elementos[event.previousIndex]?.categoria !== this.listaSeleccionada()?.elementos[event.currentIndex]?.categoria) {
+      /* No le podemos pasar undefined ni '', hay que controlarlo para que pase null */
+      this.listaSeleccionada().elementos[event.previousIndex].categoria = this.listaSeleccionada().elementos[event.currentIndex]?.categoria || null;
+    }
+    
+    /* Si el elemento lo pasamos a checkeado o des-checkeado o viceversa, lo cambiamos */
+    /* Como no quiero esto, lo dejo comentado por si en un futuro lo quiero */
+    // if (this.listaSeleccionada()?.elementos[event.previousIndex]?.checkeado !== this.listaSeleccionada()?.elementos[event.currentIndex]?.checkeado) {
+    //   this.listaSeleccionada().elementos[event.previousIndex].checkeado = this.listaSeleccionada()?.elementos[event.currentIndex]?.checkeado;
+    // }
+
     moveItemInArray(this.listaSeleccionada().elementos, event.previousIndex, event.currentIndex);
     this.guardarLista(this.listaSeleccionada(), false, false);
   }
@@ -754,5 +845,90 @@ export class AppComponent {
 
   elementosCheckeadosLista(checkeado: boolean) {
     return this.listaSeleccionada().elementos.filter(ele => checkeado ? ele?.checkeado : !ele?.checkeado).length || 0;
+  }
+
+  primerElementoDeCategoria(elemento: ElementoLista): boolean {
+    /* Separamos tambien si esta tachado o no */
+    const indexElemento = this.listaSeleccionada().elementos.findIndex(e => e?.nombre == elemento?.nombre && e?.checkeado == elemento?.checkeado);
+    const indexPrimerElementoConCategoria = this.listaSeleccionada().elementos.findIndex(e => e?.categoria == elemento?.categoria && e?.checkeado == elemento?.checkeado);
+    return indexElemento === indexPrimerElementoConCategoria;
+  }
+
+  confirmarEliminarCategoria(categoria: string) {
+    this.confirmationService.confirm({
+      header: '¿Seguro que quieres eliminar esta categoría?',
+      message: 'Los elementos que tengan esta categoría se quedarán sin categoría',
+      icon: 'pi-exclamation-triangle',
+      rejectButtonStyleClass: 'bg-white text-black p-button-sm',
+      acceptButtonStyleClass: 'bg-red-400 text-black p-button-sm border-red-400',
+      rejectLabel: 'Cancelar',
+      acceptLabel: 'Eliminar',
+      accept: () => {
+        /* Quitamos la categoria de la lista */
+        this.listaSeleccionada().categorias = this.listaSeleccionada()?.categorias?.filter(cat => cat !== categoria);
+
+        /* Tambien de los elementos que la tenian */
+        this.listaSeleccionada().elementos = this.listaSeleccionada()?.elementos?.map(ele => {
+          if (ele.categoria == categoria) {
+            ele.categoria = null;
+          }
+          return ele;
+        });
+
+        this.guardarLista(this.listaSeleccionada(), false, false);
+        this.messageService.add({ severity: 'info', summary: 'Categoría eliminada', life: 3000 });
+      }
+    });
+  }
+
+  anadirCategoria(categoria: string) {
+    if (!categoria) {
+      this.messageService.add({ severity: 'error', summary: 'La categoría no se puede crear vacía', life: 3000 });
+    } else if (this.listaSeleccionada()?.categorias && this.listaSeleccionada()?.categorias.map(cat => normalizarCadena(cat)).includes(categoria)) {
+      this.messageService.add({ severity: 'error', summary: 'La categoría ya está en la lista', life: 3000 });
+      return;
+    } else {
+      if (!this.listaSeleccionada()?.categorias?.length) {
+        this.listaSeleccionada().categorias = [];
+      }
+      this.listaSeleccionada().categorias.push(categoria);
+      this.nombreCategoriaForm.set('');
+    }
+
+    this.guardarLista(this.listaSeleccionada(), false, false);
+    this.messageService.add({ severity: 'info', summary: 'Categoría añadida', life: 3000 });
+  }
+
+  editarCategoria(categoria: string, categoriaAnterior: string) {
+    if (!categoria) {
+      this.messageService.add({ severity: 'error', summary: 'La categoría no se puede poner vacía', life: 3000 });
+    } else if (this.listaSeleccionada()?.categorias && this.listaSeleccionada()?.categorias.map(cat => normalizarCadena(cat)).includes(categoria)) {
+      this.messageService.add({ severity: 'error', summary: 'La categoría ya está en la lista', life: 3000 });
+      return;
+    } else {
+      /* Debemos cambiar tanto de la lista como de todos los elementos que tuvieran la categoria */
+
+      /* De la lista */
+      if (!this.listaSeleccionada()?.categorias?.length) {
+        this.listaSeleccionada().categorias = [];
+      }
+      let indiceCategoriaAnterior = this.listaSeleccionada()?.categorias?.indexOf(categoriaAnterior);
+      if (indiceCategoriaAnterior >= 0) {
+        this.listaSeleccionada().categorias[indiceCategoriaAnterior] = categoria;
+      }
+
+      /* De los elementos */
+      this.listaSeleccionada().elementos = this.listaSeleccionada()?.elementos?.map(ele => {
+        if ((ele.categoria ? normalizarCadena(ele.categoria) : ele.categoria) == (categoriaAnterior ? normalizarCadena(categoriaAnterior) :categoriaAnterior)) {
+          ele.categoria = categoria;
+        }
+        return ele;
+      });
+
+      this.visiblePopupEditarCategoria = false;
+    }
+
+    this.guardarLista(this.listaSeleccionada(), false, false);
+    this.messageService.add({ severity: 'info', summary: 'Categoría editada', life: 3000 });
   }
 }

@@ -53,10 +53,14 @@ export class StorageService {
       const unsubscribe = onSnapshot(q, snapshot => {
         const documentos = snapshot.docs.map(doc => {
           const data = doc.data();
-          const { uid, ...resto } = data;
+          const { uid, categorias = [], ...resto } = data;
   
+          /* Ordenamos las categorias alfabeticamente */
+          categorias.sort();
+
           return {
             id: doc.id,
+            categorias,
             ...resto
           } as Lista;
         });

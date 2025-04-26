@@ -100,4 +100,12 @@ button {
     color: green;
 }
 
+.p-dialog-header {
+    padding-block: 5px;
+}
+
+.contenido-header-sin-padding .p-dialog-content {
+    padding-block: 5px;
+}
+
 /*=====  Final de Popups  ======*/

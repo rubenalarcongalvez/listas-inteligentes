@@ -6,7 +6,7 @@
                 <ng-template pTemplate="message" let-message>
                     <div class="flex flex-col items-center w-full gap-3 border-bottom-1 surface-border">
                         <i [class]="'pi ' + (message?.icon ? message.icon : 'pi-exclamation-circle') + ' text-6xl text-primary-500'"></i>
-                        <textarea class="w-full bg-transparent border-none p-0" disabled>{{ message.message }}</textarea>
+                        <textarea *ngIf="message.message" class="w-full bg-transparent border-none p-0 text-center" disabled>{{ message.message }}</textarea>
                     </div>
                 </ng-template>
             </p-confirmDialog>
@@ -67,8 +67,11 @@
                         </section>
                     </p-overlayPanel>
                 </section>
-                <section class="flex items-center gap-2 flex-wrap">
-                    <h1 class="text-green-500 text-center grow break-all mb-0">{{ listaSeleccionada().nombre }}</h1>
+                <section class="flex items-center justify-center gap-2 flex-wrap">
+                    <div class="flex gap-2 items-baseline justify-center">
+                        <h1 class="text-center break-all mb-0 grow">{{ listaSeleccionada().nombre }}</h1>
+                        <p-button icon="pi pi-folder-open text-white" severity="secondary" pTooltip="Gestionar categorías" (onClick)="visiblePopupGestionarCategorias = true"></p-button>
+                    </div>
                 </section>
                 @if (listaSeleccionada().descripcion) {
                     <textarea class="w-full bg-transparent border-none p-0 text-center" disabled>{{ listaSeleccionada()?.descripcion }}</textarea>
@@ -84,8 +87,14 @@
                             <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Pendiente' : 'Tachado' }}</h3>
                             <p-badge [value]="elementosCheckeadosLista(index0 == 1)"/>
                         </div>
+                        
                         @for (elemento of listaElementos || []; let index1 = $index; track index1) {
                             @if (index0 == 1 ? elemento?.checkeado : !elemento?.checkeado) {
+                                <!-- Categoria pertinente -->
+                                @if (primerElementoDeCategoria(elemento)) {
+                                    <h4 class="text-green-400 my-1">{{elemento?.categoria ? elemento.categoria : 'Sin categoría'}}</h4>
+                                }
+
                                 <!-- Para el filtrado, aplicamos este ngClass para que funcione con el drag and drop -->
                                 <div [class]="'flex gap-2 items-center ' + claseSiElementoPasaFiltro(elemento?.nombre)" [cdkDragDisabled]="modoFiltradoTotal && nombreFiltrar()?.length != 0" cdkDrag [cdkDragStartDelay]="500">
                                     <p-checkbox 
@@ -279,6 +288,7 @@ styleClass="p-3"
     draggable="false"
     maximizable
     [dismissableMask]="false"
+    [closeOnEscape]="false"
     styleClass="p-3 w-[500px]"
     (onShow)="ponerFocusInputPrincipal('autocomplete')"
 >
@@ -311,6 +321,24 @@ styleClass="p-3"
             <input placeholder="Medida" pInputText id="unidadMedida" class="w-full" autocomplete="off" formControlName="unidadMedida"/>
         </div>
         <textarea placeholder="Descripción" pInputText id="descripcion" class="flex-auto w-full p-3" autocomplete="off" formControlName="descripcion"></textarea>
+
+        <p-autoComplete 
+        formControlName="categoria"
+        [suggestions]="listaFiltradaCategorias" 
+        (completeMethod)="filtrarNombresCategorias($event)" 
+        completeOnFocus
+        placeholder="Categoría"
+        dropdown
+        styleClass="w-full"
+        class="w-full"
+        emptyMessage="Crea una nueva categoría"
+        appendTo="body"
+        >
+            <ng-template let-categoria pTemplate="item">
+                <span class="text-wrap">{{ categoria ? categoria : 'Sin categoría' }}</span>
+            </ng-template>
+        </p-autoComplete>
+
         <div class="flex gap-2 items-center flex-nowrap w-full">
             <input placeholder="Añadir variedad" pInputText id="variedadActual" #nombre class="flex-auto w-full" autocomplete="off" formControlName="variedadActual" (keydown.enter)="anadirVariedad()"/>
             <p-button icon="pi pi-plus" (onClick)="anadirVariedad()"></p-button>
@@ -353,6 +381,7 @@ styleClass="p-3"
     [modal]="true" 
     draggable="false"
     maximizable
+    [closeOnEscape]="false"
     [dismissableMask]="false"
     styleClass="p-3 w-[500px]"
 >
@@ -384,6 +413,24 @@ styleClass="p-3"
             <input placeholder="Medida" pInputText id="unidadMedida" class="w-full" autocomplete="off" formControlName="unidadMedida"/>
         </div>
         <textarea placeholder="Descripción" pInputText id="descripcion" class="flex-auto w-full p-3" autocomplete="off" formControlName="descripcion"></textarea>
+
+        <p-autoComplete 
+        formControlName="categoria"
+        [suggestions]="listaFiltradaCategorias" 
+        (completeMethod)="filtrarNombresCategorias($event)" 
+        completeOnFocus
+        placeholder="Categoría"
+        dropdown
+        styleClass="w-full"
+        class="w-full"
+        emptyMessage="Crea una nueva categoría"
+        appendTo="body"
+        >
+            <ng-template let-categoria pTemplate="item">
+                <span class="text-wrap">{{ categoria ? categoria : 'Sin categoría' }}</span>
+            </ng-template>
+        </p-autoComplete>
+
         <div class="flex gap-2 items-center flex-nowrap w-full">
             <input placeholder="Añadir variedad" pInputText id="variedadActual" #nombre class="flex-auto w-full" autocomplete="off" formControlName="variedadActual" (keydown.enter)="anadirVariedad()"/>
             <p-button icon="pi pi-plus" (onClick)="anadirVariedad()"></p-button>
@@ -426,6 +473,7 @@ styleClass="p-3"
     [modal]="true" 
     draggable="false"
     maximizable
+    [closeOnEscape]="false"
     [dismissableMask]="false"
     styleClass="p-3 w-[500px]"
     (onShow)="ponerFocusInputPrincipal()"
@@ -458,6 +506,86 @@ styleClass="p-3"
                 label="Añadir" 
                 [outlined]="true" 
                 (onClick)="importElementos()" 
+            />
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Gestionar categorias -->
+<p-dialog 
+    [(visible)]="visiblePopupGestionarCategorias" 
+    [modal]="true" 
+    draggable="false"
+    maximizable
+    [closeOnEscape]="false"
+    [dismissableMask]="false"
+    (onShow)="nombreCategoriaForm.set('')"
+    styleClass="p-3 w-[500px]"
+>
+    <ng-template pTemplate="header">
+        <h2>Gestionar categorías</h2>
+    </ng-template>
+    
+    <div class="flex flex-col items-center gap-3 w-full">
+        <section class="flex items-center gap-2">
+            <i class="pi pi-exclamation-triangle"></i>
+            <p>Todas las acciones realizadas en este panel, se realizarán a tiempo real</p>
+        </section>
+
+        <div class="flex items-center gap-2 w-full">
+            <input placeholder="Nueva categoría" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreCategoriaForm" (keydown.enter)="anadirCategoria(nombreCategoriaForm())"/>
+            <p-button icon="pi pi-plus" (onClick)="anadirCategoria(nombreCategoriaForm())"></p-button>
+        </div>
+
+        <div class="w-full flex flex-col gap-2">
+            @for (categoria of listaSeleccionada()?.categorias || []; track categoria) {
+              <div class="flex items-center justify-between gap-2" *ngIf="categoria">
+                <span class="grow rounded bg-green-600 p-2">{{ categoria }}</span>
+                <i class="pi pi-pencil text-orange-400 cursor-pointer" pTooltip="Editar categoría" tooltipPosition="top" (click)="visiblePopupEditarCategoria = true; nombreCategoriaForm.set(categoria); nombreCategoriaAnterior.set(categoria)"></i>
+                <i class="pi pi-times-circle text-red-600 cursor-pointer" pTooltip="Eliminar categoría" (click)="confirmarEliminarCategoria(categoria)"></i>
+              </div>
+            }
+        </div>
+        
+        <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
+    </div>
+</p-dialog>
+
+<!-- Editar categoria -->
+<p-dialog 
+    [(visible)]="visiblePopupEditarCategoria" 
+    [modal]="true" 
+    draggable="false"
+    maximizable
+    [dismissableMask]="false"
+    (onHide)="nombreCategoriaForm.set(''); nombreCategoriaAnterior.set('')"
+    styleClass="p-3 w-[500px] contenido-header-sin-padding"
+    (onShow)="ponerFocusInputPrincipal()"
+>
+    <ng-template pTemplate="header">
+        <h2>Editar categoría</h2>
+    </ng-template>
+    
+    <div class="flex flex-col items-center gap-3 w-full">
+        <div class="flex items-center gap-2 w-full">
+            <input placeholder="Editar categoría" pInputText class="w-full inputPrincipal" autocomplete="off" [(ngModel)]="nombreCategoriaForm" (keydown.enter)="editarCategoria(nombreCategoriaForm(), nombreCategoriaAnterior())"/>
+        </div>
+        
+        <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2 p-2">
+            <p-button 
+                label="Cancelar" 
+                [text]="true" 
+                styleClass="cancel"
+                (onClick)="visiblePopupEditarCategoria = false" 
+            />
+            <p-button 
+                label="Confirmar" 
+                [outlined]="true" 
+                (onClick)="editarCategoria(nombreCategoriaForm(), nombreCategoriaAnterior())" 
             />
         </div>
     </ng-template>
