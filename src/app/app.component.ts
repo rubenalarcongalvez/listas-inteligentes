@@ -316,8 +316,9 @@ export class AppComponent {
       // Si el elemento no estaba tachado preguntamos si quiere añadir o cancelamos
       this.confirmationService.confirm({
         message: 'El elemento ya existe, se añadirá la cantidad y variedades seleccionadas al elemento existente',
-        icon: 'pi pi-exclamation-triangle',
+        icon: 'pi pi-cart-plus',
         rejectButtonStyleClass: 'bg-white text-black p-button-sm',
+        acceptButtonStyleClass: 'bg-green-400 text-black p-button-sm',
         rejectLabel: 'Cancelar',
         acceptLabel: 'Confirmar',
         accept: () => {
@@ -355,8 +356,9 @@ export class AppComponent {
     } else {
       this.confirmationService.confirm({
         message: 'El elemento ya existe y estaba tachado. Se sobreescribirá y des-tachará',
-        icon: 'pi pi-exclamation-triangle',
+        icon: 'pi pi-check-square',
         rejectButtonStyleClass: 'bg-white text-black p-button-sm',
+        acceptButtonStyleClass: 'bg-green-400 text-black p-button-sm',
         rejectLabel: 'Cancelar',
         acceptLabel: 'Confirmar',
         accept: () => {

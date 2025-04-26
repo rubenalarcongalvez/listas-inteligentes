@@ -5,7 +5,7 @@
             <p-confirmDialog>
                 <ng-template pTemplate="message" let-message>
                     <div class="flex flex-col items-center w-full gap-3 border-bottom-1 surface-border">
-                        <i class="pi pi-exclamation-circle text-6xl text-primary-500"></i>
+                        <i [class]="'pi ' + (message?.icon ? message.icon : 'pi-exclamation-circle') + ' text-6xl text-primary-500'"></i>
                         <textarea class="w-full bg-transparent border-none p-0" disabled>{{ message.message }}</textarea>
                     </div>
                 </ng-template>
@@ -80,7 +80,7 @@
                 <ul class="list-none flex flex-col gap-3 w-full p-0" cdkDropList (cdkDropListDropped)="drop($event)">
                     <!-- Lo separamos asi para poder ordenar con Drag and Drop -->
                     @for (listaElementos of [listaSeleccionada().elementos || [], listaSeleccionada().elementos || []]; let index0 = $index; track index0) {
-                        <div class="flex gap-2 items-center">
+                        <div class="flex gap-2 items-center" *ngIf="elementosCheckeadosLista(index0 == 1)">
                             <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Pendiente' : 'Tachado' }}</h3>
                             <p-badge [value]="elementosCheckeadosLista(index0 == 1)"/>
                         </div>
