@@ -285,7 +285,7 @@ export class AppComponent {
 
     for (let i = 0; i < (this.listaSeleccionada()?.elementos as ElementoLista[]).length; i++) {
         let lista = (this.listaSeleccionada()?.elementos as ElementoLista[])[i];
-        if (normalizarCadena(lista.nombre).indexOf(normalizarCadena(query)) == 0) {
+        if (normalizarCadena(lista.nombre).includes(normalizarCadena(query))) {
             filtered.push(lista);
         }
     }
@@ -298,7 +298,7 @@ export class AppComponent {
     let query = event.query;
 
     this.listaSeleccionada()?.categorias?.forEach(categoria => {
-      if (normalizarCadena(categoria).indexOf(normalizarCadena(query)) == 0) {
+      if (normalizarCadena(categoria).includes(normalizarCadena(query))) {
         filtered.push(categoria);
       }
     });
