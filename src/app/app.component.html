@@ -346,16 +346,25 @@ styleClass="p-3"
             <input placeholder="Añadir variedad" pInputText id="variedadActual" #nombre class="flex-auto w-full" autocomplete="off" formControlName="variedadActual" (keydown.enter)="anadirVariedad()"/>
             <p-button icon="pi pi-plus" (onClick)="anadirVariedad()"></p-button>
         </div>
-        <section class="flex flex-col gap-3 w-full mt-2">
-            <span>Variedades</span>
-            <ul class="flex items-center gap-x-10 gap-y-3 m-0 ps-0 flex-wrap">
-                @for (variedad of formAddEditElemento?.get('variedades')?.value; track $index) {
-                <li class="flex items-center gap-2">
-                    <span>{{ variedad }}</span>
-                    <i class="pi pi-times-circle text-red-600 cursor-pointer" pTooltip="Borrar variedad" (click)="borrarVariedad(variedad)"></i>
-                </li>
-                }
-            </ul>
+
+        @if (formAddEditElemento?.get('variedades')?.value) {
+            <section class="flex flex-col gap-3 w-full mt-2">
+                <span>Variedades</span>
+                <ul class="flex items-center gap-x-10 gap-y-3 m-0 ps-0 flex-wrap">
+                    @for (variedad of formAddEditElemento?.get('variedades')?.value; track $index) {
+                    <li class="flex items-center gap-2">
+                        <span>{{ variedad }}</span>
+                        <i class="pi pi-times-circle text-red-600 cursor-pointer" pTooltip="Borrar variedad" (click)="borrarVariedad(variedad)"></i>
+                    </li>
+                    }
+                </ul>
+            </section>
+        }
+
+        <section class="mt-2 flex items-center gap-2 w-full justify-end">
+            <p-checkbox formControlName="anadirAlPrincipio" inputId="anadirAlPrincipio" [binary]="true"/>
+            <label for="anadirAlPrincipio">Añadir al principio de la lista</label>
+            <i class="pi pi-info-circle cursor-pointer" (click)="mostrarMensaje('Añade el elemento al principio de su categoría')"></i>
         </section>
         
         <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>

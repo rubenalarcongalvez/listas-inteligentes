@@ -97,6 +97,7 @@ export class AppComponent {
       variedadActual: [[]],
       variedades: [''],
       categoria: [''],
+      anadirAlPrincipio: [false],
     });
     this.formImportElementoEstructurado = this.fb.group({
       texto: ['', Validators.required],
@@ -339,7 +340,13 @@ export class AppComponent {
           variedades: this.formAddEditElemento.get('variedades')?.value || [],
           categoria: categoriaElemento,
         }
-        this.listaSeleccionada().elementos.push(elementoAModificar);
+        
+        if (this.formAddEditElemento?.get('anadirAlPrincipio')?.value) {
+          this.listaSeleccionada().elementos.unshift(elementoAModificar); // Anade al principio
+        } else {
+          this.listaSeleccionada().elementos.push(elementoAModificar); // Anade al final
+        }
+
         /* Si no existia la categoria antes, la creamos */
         if (categoriaElemento && !this.listaSeleccionada()?.categorias?.map(cat => normalizarCadena(cat)).includes(normalizarCadena(categoriaElemento))) {
           if (this.listaSeleccionada()?.categorias?.length) {
