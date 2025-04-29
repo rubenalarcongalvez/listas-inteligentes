@@ -1,6 +1,6 @@
 {
   "name": "listas-inteligentes",
-  "version": "3.1",
+  "version": "3.3",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

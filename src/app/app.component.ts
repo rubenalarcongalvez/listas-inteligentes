@@ -854,6 +854,15 @@ export class AppComponent {
     return indexElemento === indexPrimerElementoConCategoria;
   }
 
+  elementosCheckeadosListaCategoria(checkeado: boolean, categoria: string) {
+    return this.listaSeleccionada().elementos.filter(ele => (checkeado ? ele?.checkeado : !ele?.checkeado) && (ele?.categoria == categoria)).length || 0;
+  }
+
+  muestraCategoria(checkeado: boolean, categoria: string) {
+    const elementosCategoria = this.listaSeleccionada().elementos.filter(ele => (checkeado ? ele?.checkeado : !ele?.checkeado) && (ele?.categoria == categoria));
+    return !this.nombreFiltrar() || elementosCategoria.some(ele => normalizarCadena(ele?.nombre).includes(normalizarCadena(this.nombreFiltrar())));
+  }
+
   confirmarEliminarCategoria(categoria: string) {
     this.confirmationService.confirm({
       header: '¿Seguro que quieres eliminar esta categoría?',
