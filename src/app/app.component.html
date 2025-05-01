@@ -91,7 +91,7 @@
                         @for (elemento of listaElementos || []; let index1 = $index; track index1) {
                             @if (index0 == 1 ? elemento?.checkeado : !elemento?.checkeado) {
                                 <!-- Categoria pertinente -->
-                                @if (primerElementoDeCategoria(elemento) && muestraCategoria(index0 == 1, elemento?.categoria)) {
+                                @if (primerElementoDeCategoria(elemento) && (!modoFiltradoTotal || muestraCategoria(index0 == 1, elemento?.categoria))) {
                                     <div class="flex gap-2 items-center">
                                         <h4 class="text-green-400 my-1">{{elemento?.categoria ? elemento.categoria : 'Sin categoría'}}</h4>
                                         <p-badge severity="secondary" badgeSize="small" [value]="elementosCheckeadosListaCategoria(index0 == 1, elemento?.categoria)"/>
