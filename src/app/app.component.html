@@ -125,7 +125,7 @@
                                                         <span class="grow" [ngClass]="{'line-through': elemento?.checkeado}">{{elemento.nombre}}</span>
                                                     </span>
                                                     @if (elemento?.descripcion) {
-                                                        <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
+                                                        <span class="text-[lightgray] whitespace-pre-line">{{ elemento.descripcion }}</span>
                                                     }
                                                 </summary>
                                                 <ul class="flex flex-col gap-2 py-2">
@@ -148,7 +148,7 @@
                                                     <span class="grow" [ngClass]="{'line-through': elemento?.checkeado}">{{elemento.nombre}}</span>
                                                 </span>
                                                 @if (elemento?.descripcion) {
-                                                    <span class="text-[lightgray]">{{ elemento.descripcion }}</span>
+                                                    <span class="text-[lightgray] whitespace-pre-line">{{ elemento.descripcion }}</span>
                                                 }
                                             </div>
                                         }
