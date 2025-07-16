@@ -304,6 +304,7 @@ styleClass="p-3"
         formControlName="nombre"
         [suggestions]="listaFiltradaElementos" 
         (completeMethod)="filtrarNombresElementos($event)" 
+        (onSelect)="ponerDatosElementoAntiguo(formAddEditElemento?.get('nombre').value)"
         completeOnFocus
         placeholder="Nombre del elemento"
         dropdown

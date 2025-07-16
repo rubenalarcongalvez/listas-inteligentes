@@ -363,6 +363,17 @@ export class AppComponent {
     }
   }
 
+  ponerDatosElementoAntiguo(elementoSeleccionado: string) {
+    let elementoAntiguo: ElementoLista = this.listaFiltradaElementos?.find(e => normalizarCadena(e?.nombre) === normalizarCadena(elementoSeleccionado));
+    if (elementoAntiguo) {
+      this.formAddEditElemento.get('descripcion').setValue(elementoAntiguo?.descripcion || '');
+      this.formAddEditElemento.get('cantidad').setValue(elementoAntiguo?.cantidad || '');
+      this.formAddEditElemento.get('unidadMedida').setValue(elementoAntiguo?.unidadMedida || '');
+      this.formAddEditElemento.get('categoria').setValue(elementoAntiguo?.categoria || '');
+      this.formAddEditElemento.get('variedades').setValue(elementoAntiguo?.variedades || []);
+    }
+  }
+
   private preguntarModificarElemento(elementoAModificar: ElementoLista, mensaje?: string, elementoAEliminar?: ElementoLista) {
     if (!elementoAModificar.checkeado) {
       // Si el elemento no estaba tachado preguntamos si quiere añadir o cancelamos
