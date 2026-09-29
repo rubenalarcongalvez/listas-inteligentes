@@ -31,7 +31,7 @@
     </header>
 
     <main class="p-5 pt-0 my-0 max-w-[1920px] flex flex-col gap-2 grow w-full">
-        @if (cargando) {
+        @if (cargando && loggedIn) {
             <p-progressSpinner ariaLabel="loading" class="w-full text-center pt-5"/>
         } @else {
             @if (loggedIn && listaSeleccionada()) {
@@ -41,7 +41,7 @@
                             <i class="pi pi-plus"></i>
                             <span>Añadir elemento</span>
                         </div>
-                        <div class="flex gap-2 items-baseline bg-blue-600 p-2 rounded cursor-pointer text-white" (click)="formImportElementoEstructurado.reset({ quitarPrimeraLinea: true }); visiblePopupImportElementos = true">
+                        <div class="flex gap-2 items-baseline bg-blue-600 p-2 rounded cursor-pointer text-white" (click)="formImportElementoEstructurado.reset({ quitarPrimeraLinea: false }); visiblePopupImportElementos = true">
                             <i class="pi pi-file-import" pTooltip="Importar elementos desde texto estructurado" tooltipPosition="left"></i>
                         </div>
                         <i class="pi pi-ellipsis-v cursor-pointer" (click)="overlayOptions.toggle($event)"></i>
@@ -77,7 +77,7 @@
                     <textarea class="w-full bg-transparent border-none p-0 text-center" disabled>{{ listaSeleccionada()?.descripcion }}</textarea>
                 }
                 <div class="flex gap-2 items-center">
-                    <input placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
+                    <input type="search" placeholder="Buscar por nombre" pInputText class="w-full" autocomplete="off" [(ngModel)]="nombreFiltrar"/>
                     <p-button [icon]="'pi ' + (modoFiltradoTotal ? 'pi-sparkles' : 'pi-filter')" severity="info" [pTooltip]="modoFiltradoTotal ? 'Activar filtrado resaltar' : 'Activar filtrado total'" (onClick)="modoFiltradoTotal = !modoFiltradoTotal"></p-button>
                 </div>
                 <ul class="list-none flex flex-col gap-3 w-full p-0" cdkDropList (cdkDropListDropped)="drop($event)">
@@ -87,7 +87,7 @@
                             <h3 class="mt-1 mb-0">{{ $index == 0 ? 'Pendiente' : 'Tachado' }}</h3>
                             <p-badge [value]="elementosCheckeadosLista(index0 == 1)"/>
                         </div>
-                        
+
                         @for (elemento of listaElementos || []; let index1 = $index; track index1) {
                             @if (index0 == 1 ? elemento?.checkeado : !elemento?.checkeado) {
                                 <!-- Categoria pertinente -->
@@ -100,9 +100,9 @@
 
                                 <!-- Para el filtrado, aplicamos este ngClass para que funcione con el drag and drop -->
                                 <div [class]="'flex gap-2 items-center ' + claseSiElementoPasaFiltro(elemento?.nombre)" [cdkDragDisabled]="modoFiltradoTotal && nombreFiltrar()?.length != 0" cdkDrag [cdkDragStartDelay]="500">
-                                    <p-checkbox 
+                                    <p-checkbox
                                     [(ngModel)]="elemento.checkeado"
-                                    [binary]="true" 
+                                    [binary]="true"
                                     inputId="binary"
                                     (click)="toggleCheck(elemento)"
                                     />
@@ -118,7 +118,7 @@
                                                             <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded justify-self-end">
                                                                 <span>{{elemento.cantidad}}</span>
                                                                 @if (elemento.unidadMedida) {
-                                                                    <span>{{elemento.unidadMedida}}</span>
+                                                                    <span class="text-yellow-500">{{elemento.unidadMedida}}</span>
                                                                 }
                                                             </section>
                                                         }
@@ -141,7 +141,7 @@
                                                         <section class="flex gap-1 text-white bg-black border border-solid border-white p-1 rounded">
                                                             <span>{{elemento.cantidad}}</span>
                                                             @if (elemento.unidadMedida) {
-                                                                <span>{{elemento.unidadMedida}}</span>
+                                                                <span class="text-yellow-500">{{elemento.unidadMedida}}</span>
                                                             }
                                                         </section>
                                                     }
@@ -172,10 +172,10 @@
 
 <!-- Popups -->
 <!-- Update email -->
-<p-dialog 
-    header="Header" 
-    [(visible)]="visibleUpdateEmailPopup" 
-    [modal]="true" 
+<p-dialog
+    header="Header"
+    [(visible)]="visibleUpdateEmailPopup"
+    [modal]="true"
     draggable="false"
     maximizable
     [dismissableMask]="true"
@@ -185,7 +185,7 @@
     <ng-template pTemplate="header">
         <h2 class="text-blue-600">Actualizar email</h2>
     </ng-template>
-    
+
     <form [formGroup]="updateEmailForm" (ngSubmit)="updateUserEmail()" (keydown.enter)="updateUserEmail()" class="flex flex-col items-center gap-3 w-full py-2">
         <input placeholder="Email anterior" pInputText id="previousEmail" class="flex-auto w-full text-lg" autocomplete="off" formControlName="previousEmail"/>
         <input placeholder="Nuevo Email" pInputText id="email" class="flex-auto w-full text-lg" autocomplete="off" formControlName="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"/>
@@ -196,26 +196,26 @@
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2 p-2">
-            <p-button 
-                label="Cancelar" 
-                [text]="true" 
+            <p-button
+                label="Cancelar"
+                [text]="true"
                 styleClass="cancel"
-                (onClick)="visibleUpdateEmailPopup = false" 
+                (onClick)="visibleUpdateEmailPopup = false"
             />
-            <p-button 
-                label="Actualizar" 
-                [outlined]="true" 
-                (onClick)="updateUserEmail()" 
+            <p-button
+                label="Actualizar"
+                [outlined]="true"
+                (onClick)="updateUserEmail()"
             />
         </div>
     </ng-template>
 </p-dialog>
 
 <!-- Update password -->
-<p-dialog 
-header="Header" 
-[(visible)]="visibleUpdatePasswordPopup" 
-[modal]="true" 
+<p-dialog
+header="Header"
+[(visible)]="visibleUpdatePasswordPopup"
+[modal]="true"
 draggable="false"
 maximizable
 [dismissableMask]="true"
@@ -235,26 +235,26 @@ styleClass="p-3"
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2 p-2">
-            <p-button 
-                label="Cancelar" 
-                [text]="true" 
+            <p-button
+                label="Cancelar"
+                [text]="true"
                 styleClass="cancel"
-                (onClick)="visibleUpdatePasswordPopup = false" 
+                (onClick)="visibleUpdatePasswordPopup = false"
             />
-            <p-button 
-                label="Actualizar" 
-                [outlined]="true" 
-                (onClick)="updateUserPassword()" 
+            <p-button
+                label="Actualizar"
+                [outlined]="true"
+                (onClick)="updateUserPassword()"
             />
         </div>
     </ng-template>
 </p-dialog>
 
 <!-- Delete user -->
-<p-dialog 
-    header="Header" 
-    [(visible)]="visibleDeleteUserPopup" 
-    [modal]="true" 
+<p-dialog
+    header="Header"
+    [(visible)]="visibleDeleteUserPopup"
+    [modal]="true"
     draggable="false"
     maximizable
     [dismissableMask]="true"
@@ -263,31 +263,31 @@ styleClass="p-3"
     <ng-template pTemplate="header">
         <h2 class="text-red-600">ATENCIÓN</h2>
     </ng-template>
-    
+
     <p class="text-center py-2">¿Estás seguro de que quieres eliminar tu usuario?</p>
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2 p-2">
-            <p-button 
-                label="Cancelar" 
-                [text]="true" 
+            <p-button
+                label="Cancelar"
+                [text]="true"
                 styleClass="cancel"
-                (onClick)="visibleDeleteUserPopup = false" 
+                (onClick)="visibleDeleteUserPopup = false"
             />
-            <p-button 
-                label="Eliminar" 
-                [outlined]="true" 
+            <p-button
+                label="Eliminar"
+                [outlined]="true"
                 severity="danger"
-                (onClick)="deleteUser()" 
+                (onClick)="deleteUser()"
             />
         </div>
     </ng-template>
 </p-dialog>
 
 <!-- Anadir elemento -->
-<p-dialog 
-    [(visible)]="visiblePopupAddElemento" 
-    [modal]="true" 
+<p-dialog
+    [(visible)]="visiblePopupAddElemento"
+    [modal]="true"
     draggable="false"
     maximizable
     [dismissableMask]="false"
@@ -298,12 +298,12 @@ styleClass="p-3"
     <ng-template pTemplate="header">
         <h2>Añadir elemento</h2>
     </ng-template>
-    
+
     <form [formGroup]="formAddEditElemento" (ngSubmit)="addElemento()" (keydown.control.enter)="addElemento()" class="flex flex-col items-center gap-3 w-full">
-        <p-autoComplete 
+        <p-autoComplete
         formControlName="nombre"
-        [suggestions]="listaFiltradaElementos" 
-        (completeMethod)="filtrarNombresElementos($event)" 
+        [suggestions]="listaFiltradaElementos"
+        (completeMethod)="filtrarNombresElementos($event)"
         (onSelect)="ponerDatosElementoAntiguo(formAddEditElemento?.get('nombre').value)"
         completeOnFocus
         placeholder="Nombre del elemento"
@@ -326,10 +326,10 @@ styleClass="p-3"
         </div>
         <textarea placeholder="Descripción" pInputText id="descripcion" class="flex-auto w-full p-3" autocomplete="off" formControlName="descripcion"></textarea>
 
-        <p-autoComplete 
+        <p-autoComplete
         formControlName="categoria"
-        [suggestions]="listaFiltradaCategorias" 
-        (completeMethod)="filtrarNombresCategorias($event)" 
+        [suggestions]="listaFiltradaCategorias"
+        (completeMethod)="filtrarNombresCategorias($event)"
         completeOnFocus
         placeholder="Categoría"
         dropdown
@@ -367,31 +367,31 @@ styleClass="p-3"
             <label for="anadirAlPrincipio">Añadir al principio de la lista</label>
             <i class="pi pi-info-circle cursor-pointer" (click)="mostrarMensaje('Añade el elemento al principio de su categoría')"></i>
         </section>
-        
+
         <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
     </form>
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2 p-2">
-            <p-button 
-                label="Cancelar" 
-                [text]="true" 
+            <p-button
+                label="Cancelar"
+                [text]="true"
                 styleClass="cancel"
-                (onClick)="visiblePopupAddElemento = false" 
+                (onClick)="visiblePopupAddElemento = false"
             />
-            <p-button 
-                label="Añadir" 
-                [outlined]="true" 
-                (onClick)="addElemento()" 
+            <p-button
+                label="Añadir"
+                [outlined]="true"
+                (onClick)="addElemento()"
             />
         </div>
     </ng-template>
 </p-dialog>
 
 <!-- Editar elemento -->
-<p-dialog 
-    [(visible)]="visiblePopupEditElemento" 
-    [modal]="true" 
+<p-dialog
+    [(visible)]="visiblePopupEditElemento"
+    [modal]="true"
     draggable="false"
     maximizable
     [closeOnEscape]="false"
@@ -401,12 +401,12 @@ styleClass="p-3"
     <ng-template pTemplate="header">
         <h2>Editar elemento</h2>
     </ng-template>
-    
+
     <form [formGroup]="formAddEditElemento" (ngSubmit)="editElemento()" (keydown.control.enter)="editElemento()" class="flex flex-col items-center gap-3 w-full">
-        <p-autoComplete 
+        <p-autoComplete
         formControlName="nombre"
-        [suggestions]="listaFiltradaElementos" 
-        (completeMethod)="filtrarNombresElementos($event)" 
+        [suggestions]="listaFiltradaElementos"
+        (completeMethod)="filtrarNombresElementos($event)"
         completeOnFocus
         placeholder="Nombre del elemento"
         dropdown
@@ -427,10 +427,10 @@ styleClass="p-3"
         </div>
         <textarea placeholder="Descripción" pInputText id="descripcion" class="flex-auto w-full p-3" autocomplete="off" formControlName="descripcion"></textarea>
 
-        <p-autoComplete 
+        <p-autoComplete
         formControlName="categoria"
-        [suggestions]="listaFiltradaCategorias" 
-        (completeMethod)="filtrarNombresCategorias($event)" 
+        [suggestions]="listaFiltradaCategorias"
+        (completeMethod)="filtrarNombresCategorias($event)"
         completeOnFocus
         placeholder="Categoría"
         dropdown
@@ -459,31 +459,31 @@ styleClass="p-3"
                 }
             </ul>
         </section>
-        
+
         <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
     </form>
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2 p-2">
-            <p-button 
-                label="Cancelar" 
-                [text]="true" 
+            <p-button
+                label="Cancelar"
+                [text]="true"
                 styleClass="cancel"
-                (onClick)="visiblePopupEditElemento = false" 
+                (onClick)="visiblePopupEditElemento = false"
             />
-            <p-button 
-                label="Aplicar" 
-                [outlined]="true" 
-                (onClick)="editElemento()" 
+            <p-button
+                label="Aplicar"
+                [outlined]="true"
+                (onClick)="editElemento()"
             />
         </div>
     </ng-template>
 </p-dialog>
 
 <!-- Importar elementos -->
-<p-dialog 
-    [(visible)]="visiblePopupImportElementos" 
-    [modal]="true" 
+<p-dialog
+    [(visible)]="visiblePopupImportElementos"
+    [modal]="true"
     draggable="false"
     maximizable
     [closeOnEscape]="false"
@@ -494,7 +494,7 @@ styleClass="p-3"
     <ng-template pTemplate="header">
         <h2>Añadir lista de elementos</h2>
     </ng-template>
-    
+
     <form [formGroup]="formImportElementoEstructurado" (ngSubmit)="importElementos()" (keydown.control.enter)="importElementos()" class="flex flex-col items-center gap-3 w-full">
         <h4>Todos los elementos con el mismo nombre importados se combinarán y des-tacharán</h4>
         <textarea placeholder="Importará elementos por línea ignorando los que estén entre [ ] e ignorando la primera línea (título)" pInputText id="texto" class="flex-auto w-full p-3 inputPrincipal" autocomplete="off" formControlName="texto"></textarea>
@@ -503,31 +503,31 @@ styleClass="p-3"
             <label for="quitarPrimeraLinea">Quitar primera línea</label>
             <i class="pi pi-info-circle cursor-pointer" (click)="mostrarMensaje('Quita la primera línea en caso de que importemos también el nombre de la lista lo primero')"></i>
         </section>
-        
+
         <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
     </form>
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2 p-2">
-            <p-button 
-                label="Cancelar" 
-                [text]="true" 
+            <p-button
+                label="Cancelar"
+                [text]="true"
                 styleClass="cancel"
-                (onClick)="visiblePopupImportElementos = false" 
+                (onClick)="visiblePopupImportElementos = false"
             />
-            <p-button 
-                label="Añadir" 
-                [outlined]="true" 
-                (onClick)="importElementos()" 
+            <p-button
+                label="Añadir"
+                [outlined]="true"
+                (onClick)="importElementos()"
             />
         </div>
     </ng-template>
 </p-dialog>
 
 <!-- Gestionar categorias -->
-<p-dialog 
-    [(visible)]="visiblePopupGestionarCategorias" 
-    [modal]="true" 
+<p-dialog
+    [(visible)]="visiblePopupGestionarCategorias"
+    [modal]="true"
     draggable="false"
     maximizable
     [closeOnEscape]="false"
@@ -538,7 +538,7 @@ styleClass="p-3"
     <ng-template pTemplate="header">
         <h2>Gestionar categorías</h2>
     </ng-template>
-    
+
     <div class="flex flex-col items-center gap-3 w-full">
         <section class="flex items-center gap-2">
             <i class="pi pi-exclamation-triangle"></i>
@@ -559,15 +559,15 @@ styleClass="p-3"
               </div>
             }
         </div>
-        
+
         <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
     </div>
 </p-dialog>
 
 <!-- Editar categoria -->
-<p-dialog 
-    [(visible)]="visiblePopupEditarCategoria" 
-    [modal]="true" 
+<p-dialog
+    [(visible)]="visiblePopupEditarCategoria"
+    [modal]="true"
     draggable="false"
     maximizable
     [dismissableMask]="false"
@@ -578,27 +578,27 @@ styleClass="p-3"
     <ng-template pTemplate="header">
         <h2>Editar categoría</h2>
     </ng-template>
-    
+
     <div class="flex flex-col items-center gap-3 w-full">
         <div class="flex items-center gap-2 w-full">
             <input placeholder="Editar categoría" pInputText class="w-full inputPrincipal" autocomplete="off" [(ngModel)]="nombreCategoriaForm" (keydown.enter)="editarCategoria(nombreCategoriaForm(), nombreCategoriaAnterior())"/>
         </div>
-        
+
         <p-messages class="w-full" [escape]="false" [(value)]="messages" [enableService]="false"></p-messages>
     </div>
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2 p-2">
-            <p-button 
-                label="Cancelar" 
-                [text]="true" 
+            <p-button
+                label="Cancelar"
+                [text]="true"
                 styleClass="cancel"
-                (onClick)="visiblePopupEditarCategoria = false" 
+                (onClick)="visiblePopupEditarCategoria = false"
             />
-            <p-button 
-                label="Confirmar" 
-                [outlined]="true" 
-                (onClick)="editarCategoria(nombreCategoriaForm(), nombreCategoriaAnterior())" 
+            <p-button
+                label="Confirmar"
+                [outlined]="true"
+                (onClick)="editarCategoria(nombreCategoriaForm(), nombreCategoriaAnterior())"
             />
         </div>
     </ng-template>

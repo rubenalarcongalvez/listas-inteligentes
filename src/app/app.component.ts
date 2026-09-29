@@ -49,24 +49,24 @@ export class AppComponent {
   idListaSeleccionada = signal<string>('');
   listaSeleccionada = computed(() => {
     let listaSeleccionadaFinal = this.listas().find(lista => lista?.id === this.idListaSeleccionada()) || (this.listas()[0] || null);
-    
+
     listaSeleccionadaFinal?.elementos?.sort((a, b) => {
       const checkComp = Number(a?.checkeado) - Number(b?.checkeado);
       if (checkComp !== 0) {
         return checkComp;
       }
-  
+
       const categoriaA = normalizarCadena(a?.categoria || '');
       const categoriaB = normalizarCadena(b?.categoria || '');
-  
+
       /* Si la categoria esta vacia, se pone lo ultimo */
       if (!categoriaA && categoriaB) return 1;
       if (categoriaA && !categoriaB) return -1;
       return categoriaA.localeCompare(categoriaB);
     });
-  
+
     return listaSeleccionadaFinal;
-  });   
+  });
   nombreElementoEditando = null;
   listaFiltradaElementos: ElementoLista[] = [];
   listaFiltradaCategorias: string[] = [];
@@ -101,7 +101,7 @@ export class AppComponent {
     });
     this.formImportElementoEstructurado = this.fb.group({
       texto: ['', Validators.required],
-      quitarPrimeraLinea: [true]
+      quitarPrimeraLinea: [false]
     });
   }
 
@@ -118,12 +118,12 @@ export class AppComponent {
   /*=============================================
   =            Auth            =
   =============================================*/
-  
+
   get loggedIn() : boolean {
     // return this.authService.getCurrentUser() != null; //It is a bit slow to detect it on first instance
     return this.storageService.isLoggedIn(); //In case we use localStorage
-  } 
-  
+  }
+
   get getUser() : User | null {
     return this.authService.getCurrentUser();
   }
@@ -146,7 +146,7 @@ export class AppComponent {
           this.messageService.add({ severity: 'warn', summary: 'Inicia sesión', detail: 'Debes iniciar sesión de nuevo para realizar esta acción', life: 3000 });
           setTimeout(() => {
             this.logout();
-          }, 2000); 
+          }, 2000);
         } else {
           this.messages = [({ severity: 'error', summary: 'Error en el email', detail: 'No puedes cambiar a este email', life: 3000 })];
         }
@@ -177,7 +177,7 @@ export class AppComponent {
           this.messageService.add({ severity: 'warn', summary: 'Inicia sesión', detail: 'Debes iniciar sesión de nuevo para realizar esta acción', life: 3000 });
           setTimeout(() => {
             this.logout();
-          }, 2000); 
+          }, 2000);
           this.logout();
         } else {
           this.messages = [({ severity: 'error', summary: 'Error de contraseña', detail: 'No puedes poner esta contraseña', life: 3000 })];
@@ -207,9 +207,9 @@ export class AppComponent {
         this.messageService.add({ severity: 'warn', summary: 'Inicia sesión', detail: 'Debes iniciar sesión de nuevo para realizar esta acción', life: 3000 });
         setTimeout(() => {
           this.logout();
-        }, 2000); 
+        }, 2000);
         this.logout();
-      } 
+      }
       console.error(err);
     });
   }
@@ -217,7 +217,7 @@ export class AppComponent {
   logout() {
     this.authService.logout();
   }
-  
+
   /*=====  Final de Auth  ======*/
 
   /*=============================================
@@ -227,7 +227,7 @@ export class AppComponent {
   async inicializarDatosBBDD(): Promise<void> {
     const user = await firstValueFrom(this.authService.getCurrentUserPeticion());
     if (!user) return;
-  
+
     // Escucha en tiempo real las listas
     this.storageService.getFilteredDocumentsByUID(user.uid).subscribe({
       next: (listas) => {
@@ -235,7 +235,7 @@ export class AppComponent {
       },
       error: (err) => console.error(err)
     });
-  
+
     // Escucha en tiempo real la lista predeterminada
     this.storageService.getListaPredeterminada(user.uid).subscribe({
       next: (idPredet) => {
@@ -250,7 +250,7 @@ export class AppComponent {
         console.error(err); this.cargando = false;
       }
     });
-  }  
+  }
 
   guardarLista(lista: Lista, dejarDeCompartir: boolean = false, confirmar: boolean = true): any {
     if (!this.authService.getCurrentUser()?.uid) {
@@ -324,9 +324,9 @@ export class AppComponent {
       }
 
       const categoriaElemento = this.formAddEditElemento?.get('categoria')?.value && (normalizarCadena(this.formAddEditElemento?.get('categoria')?.value) != normalizarCadena('Sin categoria')) ? this.formAddEditElemento?.get('categoria')?.value : null;
-      
+
       let elementoAModificar = this.listaSeleccionada().elementos?.find(elemento => elemento.nombre.toLowerCase() == this.formAddEditElemento.get('nombre')?.value.toLowerCase());
-      
+
       if (elementoAModificar) {
         this.preguntarModificarElemento(elementoAModificar);
       } else {
@@ -340,7 +340,7 @@ export class AppComponent {
           variedades: this.formAddEditElemento.get('variedades')?.value || [],
           categoria: categoriaElemento,
         }
-        
+
         if (this.formAddEditElemento?.get('anadirAlPrincipio')?.value) {
           this.listaSeleccionada().elementos.unshift(elementoAModificar); // Anade al principio
         } else {
@@ -509,7 +509,7 @@ export class AppComponent {
       // Buscamos el elemento
       let elementoBuscado = this.listaSeleccionada().elementos?.find(elemento => elemento.nombre.toLowerCase() == this.formAddEditElemento.get('nombre')?.value.toLowerCase());
       let elementoAModificar = this.listaSeleccionada().elementos.find(elemento => elemento.nombre == this.nombreElementoEditando);
-  
+
       if (elementoBuscado && elementoBuscado.nombre != elementoAModificar.nombre) {
         // Si ya existe
         this.preguntarModificarElemento(elementoBuscado, 'Elemento reemplazado', elementoAModificar);
@@ -532,7 +532,7 @@ export class AppComponent {
             this.listaSeleccionada().categorias = [categoriaElemento];
           }
         }
-  
+
         this.guardarCambiosElemento(true, 'Elemento editado');
       }
     } else {
@@ -715,7 +715,7 @@ export class AppComponent {
         }
 
         let lista = resp;
-    
+
         if (!lista?.uidsPermitidos?.includes(this.authService.getCurrentUser()?.uid)) {
           lista.uidsPermitidos.push(this.authService.getCurrentUser()?.uid);
         }
@@ -751,7 +751,7 @@ export class AppComponent {
       }
     });
   }
-  
+
   /*=====  Final de Database  ======*/
 
   importElementos() {
@@ -760,36 +760,56 @@ export class AppComponent {
       if (this.formImportElementoEstructurado.get('quitarPrimeraLinea')?.value) {
         textoFinal = textoFinal.split('\n').slice(1).join('\n'); // Le quitamos la primera linea
       }
-      let listaProcesada: string[] = textoFinal
+      let listaProcesada: ElementoLista[] = textoFinal
       .split('\n')
-      .filter(linea =>
+      .filter((linea: string) =>
         linea.trim() !== '' && !(linea.startsWith('[') && linea.endsWith(']'))
-      );
-      
+      ).map((linea: string) => {
+        const lineaLimpia = linea.trim();
+        const indiceSeparador = lineaLimpia.indexOf('--');
+
+        if (indiceSeparador === -1) {
+          return { nombre: lineaLimpia, checkeado: false };
+        }
+
+        const datosCantidad = lineaLimpia.slice(0, indiceSeparador).trim();
+        const nombre = lineaLimpia.slice(indiceSeparador + 2).trim();
+        const coincidencia = datosCantidad.match(/^(\d+(?:[.,]\d+)?)?\s*(?:\(([^)]+)\))?$/);
+
+        if (!coincidencia || !nombre) {
+          return { nombre: lineaLimpia, checkeado: false };
+        }
+
+        const cantidad = coincidencia[1] ? Number(coincidencia[1].replace(',', '.')) : undefined;
+        const unidadMedida = coincidencia[2]?.trim() || undefined;
+
+        return { nombre, cantidad, unidadMedida, checkeado: false };
+      });
+
       this.confirmationService.confirm({
         header: '¿Seguro que quieres añadir y combinar todos los elementos?',
-        message: listaProcesada.join('\n'),
+        message: listaProcesada.map(elemento => elemento.nombre).join('\n'),
         rejectButtonStyleClass: 'bg-white text-black p-button-sm',
         rejectLabel: 'Cancelar',
         acceptLabel: 'Añadir todo',
         accept: () => {
           // Procesamos todo lo que habia antes y anadimos a nuestra lista
-          
-          // Primero ponemos lo que estaba en la lista
-          let listaProcesadaRepetida = listaProcesada.filter(elemento => this.listaSeleccionada().elementos.some(ele => ele.nombre.toLowerCase() == elemento.toLowerCase())); // Elementos repetidos en la lista
-          listaProcesadaRepetida = listaProcesadaRepetida.map(e => e.toLowerCase()); // Lo ponemos lowercase
-          listaProcesadaRepetida = listaProcesadaRepetida.filter(elemento => listaProcesadaRepetida.includes(elemento.toLowerCase())) // Le quitamos los duplicados
 
-          listaProcesada = listaProcesada.filter(elemento => !this.listaSeleccionada().elementos.some(ele => ele.nombre.toLowerCase() == elemento.toLowerCase())); // Lista nueva
+          // Primero ponemos lo que estaba en la lista
+          let listaProcesadaRepetida = listaProcesada.filter(elemento => this.listaSeleccionada().elementos.some(ele => ele.nombre.toLowerCase() == elemento.nombre.toLowerCase())); // Elementos repetidos en la lista
+          let nombresListaProcesadaRepetida = listaProcesadaRepetida.map(e => e.nombre.toLowerCase()); // Lo ponemos lowercase
+          nombresListaProcesadaRepetida = nombresListaProcesadaRepetida.filter(elemento => nombresListaProcesadaRepetida.includes(elemento.toLowerCase())) // Le quitamos los duplicados
+
+          listaProcesada = listaProcesada.filter(elemento => !this.listaSeleccionada().elementos.some(ele => ele.nombre.toLowerCase() == elemento.nombre.toLowerCase())); // Lista nueva
 
           // Luego anadimos o modificamos
           // Anadimos
           this.listaSeleccionada().elementos.push(
-            ...listaProcesada.map(e => ({ nombre: e, checkeado: false } as ElementoLista))
+            ...listaProcesada
           );
           // Modificamos elementos
           this.listaSeleccionada().elementos.map(elem => {
-              if (listaProcesadaRepetida.includes(elem.nombre.toLowerCase())) {
+              if (nombresListaProcesadaRepetida.includes(elem.nombre.toLowerCase())) {
                 elem.checkeado = false;
               }
               return elem;
@@ -831,7 +851,7 @@ export class AppComponent {
       /* No le podemos pasar undefined ni '', hay que controlarlo para que pase null */
       this.listaSeleccionada().elementos[event.previousIndex].categoria = this.listaSeleccionada().elementos[event.currentIndex]?.categoria || null;
     }
-    
+
     /* Si el elemento lo pasamos a checkeado o des-checkeado o viceversa, lo cambiamos */
     /* Como no quiero esto, lo dejo comentado por si en un futuro lo quiero */
     // if (this.listaSeleccionada()?.elementos[event.previousIndex]?.checkeado !== this.listaSeleccionada()?.elementos[event.currentIndex]?.checkeado) {
