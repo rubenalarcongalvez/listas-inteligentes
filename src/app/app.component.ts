@@ -783,7 +783,12 @@ export class AppComponent {
         const cantidad = coincidencia[1] ? Number(coincidencia[1].replace(',', '.')) : undefined;
         const unidadMedida = coincidencia[2]?.trim() || undefined;
 
-        return { nombre, cantidad, unidadMedida, checkeado: false };
+        return {
+          nombre,
+          ...(cantidad !== undefined ? { cantidad } : {}),
+          ...(unidadMedida !== undefined ? { unidadMedida } : {}),
+          checkeado: false
+        };
       });
 
       this.confirmationService.confirm({

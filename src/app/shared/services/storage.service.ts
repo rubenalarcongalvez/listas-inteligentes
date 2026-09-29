@@ -104,7 +104,18 @@ export class StorageService {
     let lista = structuredClone(listaEnviada); // Creamos copia para no interferir
     delete lista.id; // Eliminamos su id para que no se guarde en propiedad
 
-    // Si tiene elementos, y tiene variedades, transformamos a string para que se guarde en Firebase
+    // Firestore no admite valores undefined, tampoco dentro de los elementos.
+    lista = Object.fromEntries(
+      Object.entries(lista).filter(([, valor]) => valor !== undefined)
+    ) as Lista;
+    if (lista.elementos) {
+      lista.elementos = lista.elementos.map(elemento =>
+        Object.fromEntries(
+          Object.entries(elemento).filter(([, valor]) => valor !== undefined)
+        ) as typeof elemento
+      );
+    }
+
     if (docId) {
       // Si esta dejando de compartir, le quitamos de la lista a ese usuario y clonamos la lista (volvemos a setearLista pero sin el id)
       // Si somos los unicos que tenemos acceso, no hace falta hacer copia, solo sustituir
